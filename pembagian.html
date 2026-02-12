@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Siswa - Pilih Kelompok</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&family=Fredoka:wght@500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css"> 
+    <style>
+        /* Style Tambahan Khusus Halaman Ini */
+        .login-input-group {
+            text-align: left;
+            margin-bottom: 20px;
+        }
+        
+        select {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-family: 'Poppins', sans-serif;
+            outline: none;
+            cursor: pointer;
+            transition: 0.3s;
+            background: white;
+        }
+
+        select:focus {
+            border-color: #4CAF50;
+            box-shadow: 0 0 8px rgba(76, 175, 80, 0.2);
+        }
+
+        .btn-start {
+            background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-start:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(46, 125, 50, 0.3);
+        }
+
+        .btn-back {
+            margin-top: 15px;
+            display: inline-block;
+            color: #666;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+        .btn-back:hover { color: #333; }
+    </style>
+</head>
+<body>
+
+    <div class="landing-card" style="max-width: 400px;">
+        <div class="hero-icon">
+            <i class="fa-solid fa-users-rectangle"></i>
+        </div>
+
+        <h1>Identitas Kelompok</h1>
+        <p>Sebelum mengerjakan LKPD,<br>silakan pilih nomor kelompokmu:</p>
+
+        <div class="login-input-group">
+            <select id="pilihanKelompok">
+                <option value="">-- Pilih Kelompok --</option>
+                <option value="1">Kelompok 1</option>
+                <option value="2">Kelompok 2</option>
+                <option value="3">Kelompok 3</option>
+                <option value="4">Kelompok 4</option>
+                <option value="5">Kelompok 5</option>
+            </select>
+        </div>
+
+        <button onclick="simpanDanMasuk()" class="btn-start">
+            Mulai Mengerjakan <i class="fa-solid fa-arrow-right"></i>
+        </button>
+        
+        <br>
+        <a href="index.html" class="btn-back"><i class="fa-solid fa-arrow-left"></i> Kembali</a>
+    </div>
+
+    <script src="pembagian.js"></script>
+
+</body>
+</html>

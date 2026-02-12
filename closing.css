@@ -1,0 +1,63 @@
+/* =========================================
+   9. HALAMAN SELESAI (SUCCESS PAGE)
+   ========================================= */
+
+/* Agar kartu berada tepat di tengah layar */
+.success-body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: #f0f4f8; /* Warna latar belakang sama dengan index */
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+}
+
+.success-card {
+    background: linear-gradient(135deg, #d4fc79 0%, #96e6a1 100%);
+    border-radius: 20px;
+    padding: 50px;
+    text-align: center;
+    max-width: 500px;
+    width: 90%; /* Agar responsif di HP */
+    box-shadow: 0 15px 40px rgba(46, 125, 50, 0.2);
+    border: 5px solid #fff;
+    animation: popIn 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+}
+
+.success-icon {
+    font-size: 5rem;
+    color: #FFD700;
+    margin-bottom: 25px;
+    text-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.success-card h2 {
+    color: #1b5e20;
+    margin: 0 0 15px 0;
+    font-size: 2.5rem;
+    font-family: 'Fredoka', sans-serif;
+}
+
+.success-card p {
+    color: #2e7d32;
+    font-size: 1.2rem;
+    line-height: 1.6;
+    margin-bottom: 30px;
+}
+
+.success-footer {
+    background: rgba(255, 255, 255, 0.6);
+    padding: 12px 30px;
+    border-radius: 50px;
+    display: inline-block;
+    font-weight: bold;
+    color: #1b5e20;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+@keyframes popIn {
+    0% { transform: scale(0.5); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}

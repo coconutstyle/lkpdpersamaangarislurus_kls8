@@ -1,0 +1,291 @@
+/* --- 1. SETUP BACKGROUND (GAMBAR BURAM) --- */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Poppins', sans-serif;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    position: relative; /* Kunci posisi agar background tidak lari */
+    background-color: #333; /* Warna cadangan jika gambar gagal load */
+}
+
+/* Elemen Semu untuk Gambar Background */
+body::before {
+    content: "";
+    position: absolute;
+    /* Kita buat lebih lebar (-20px) agar pinggiran blur tidak terlihat jelek */
+    top: -20px; left: -20px; right: -20px; bottom: -20px;
+    z-index: -1; /* Taruh di paling belakang */
+    
+    /* URL Gambar Background (Math Chalkboard) */
+    background-image: url('Pembiasaan-Pagi.jpeg');
+    background-size: cover;
+    background-position: center;
+    
+    /* EFEK BURAM & GELAP */
+    filter: blur(8px) brightness(0.6); 
+    transform: scale(1.1); /* Zoom sedikit agar rapi */
+}
+
+/* --- 2. KARTU UTAMA (Tengah) --- */
+.landing-card {
+    background: rgba(255, 255, 255, 0.95);
+    padding: 50px;
+    border-radius: 20px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    text-align: center;
+    max-width: 600px;
+    width: 90%;
+    border: 1px solid rgba(255,255,255,0.3);
+    animation: munculKeatas 1s ease-out;
+}
+
+/* --- 3. TYPOGRAPHY & ICON --- */
+.hero-icon {
+    font-size: 4rem;
+    background: linear-gradient(#f6d365, #fda085);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent; /* Fallback untuk browser yang tidak mendukung */
+    margin-bottom: 20px;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+}
+
+h1 {
+    font-family: 'Fredoka', sans-serif;
+    color: #333;
+    font-size: 2.5rem;
+    margin: 10px 0;
+}
+
+p {
+    color: #666;
+    font-size: 1.1rem;
+    margin-bottom: 40px;
+}
+
+/* --- 4. TOMBOL PILIHAN (GRID) --- */
+.role-selection {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+}
+
+.btn-role {
+    flex: 1;
+    text-decoration: none;
+    padding: 20px;
+    border-radius: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    color: white;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.btn-student {
+    background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
+    box-shadow: 0 10px 20px rgba(76, 175, 80, 0.3);
+}
+
+.btn-teacher {
+    background: linear-gradient(135deg, #2196F3 0%, #1565C0 100%);
+    box-shadow: 0 10px 20px rgba(33, 150, 243, 0.3);
+}
+
+.btn-role:hover {
+    transform: translateY(-5px);
+    filter: brightness(1.1);
+}
+
+/* Animasi Muncul */
+@keyframes munculKeatas {
+    from { opacity: 0; transform: translateY(50px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsif HP */
+@media (max-width: 600px) {
+    .role-selection { flex-direction: column; }
+}
+
+/* WIDGET JAM MEWAH (POSISI TENGAH) */
+.live-clock-badge {
+    position: fixed;
+    /* Trik menaruh di tengah secara horizontal: */
+    left: 50%;
+    transform: translateX(-50%);
+    
+    /* Jarak dari atas (Ubah angka ini kalau masih menutupi label) */
+    top: 30px; 
+    
+    z-index: 9999; /* Selalu di atas elemen lain */
+    
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    
+    /* Efek Kaca (Glassmorphism) */
+    background: rgba(255, 255, 255, 0.25); /* Agak lebih terang dikit */
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 50px;
+    padding: 8px 30px; /* Padding kanan-kiri agak lebar biar elegan */
+    
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    color: #2c3e50; /* Warna teks gelap (kalau background cover terang) */
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.9rem;
+    
+    animation: dropDown 1s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* Garis Pembatas Vertikal */
+.divider {
+    width: 1px;
+    height: 18px;
+    background: rgba(0,0,0,0.15);
+}
+
+/* Bagian Tanggal & Jam */
+.date-part, .time-part {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 500;
+    white-space: nowrap; /* Biar teks gak turun ke bawah */
+}
+
+/* Pastikan Container/Kotak Putih kamu punya posisi RELATIVE */
+/* Contoh: kalau nama class kotak putihmu .container atau .card */
+.container, .card, .login-box {
+    position: relative; /* Wajib! Agar tanggal/jam tidak kabur ke pojok layar laptop */
+}
+
+/* GAYA UMUM BADGE */
+.corner-badge {
+    position: absolute; /* Mengambang bebas di dalam kotak putih */
+    top: 25px; /* Jarak dari atap kotak putih */
+
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    /* Desain Minimalis & Bersih */
+    background-color: rgba(240, 242, 245, 0.7); /* Abu-abu sangat muda transparan */
+    padding: 8px 16px;
+    border-radius: 20px; /* Lonjong */
+
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #555;
+
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05); /* Bayangan tipis banget */
+    transition: all 0.3s ease;
+    z-index: 10;
+
+    animation: munculKeatas 1s ease-out;
+}
+
+/* Efek saat disentuh mouse */
+.corner-badge:hover {
+    background-color: white;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+}
+
+/* POSISI SPESIFIK */
+/* 1. Pastikan kartu utama menjadi patokan posisi (Relative) */
+.landing-card {
+    position: relative; /* WAJIB: Agar badge absolut di dalamnya tidak kabur keluar */
+    background: rgba(255, 255, 255, 0.95);
+    padding: 60px 40px 40px; /* Tambah padding atas agar konten tidak tertutup badge */
+    /* ... style lainnya tetap ... */
+}
+
+/* 2. Atur ulang posisi badge agar mepet ke pojok kartu */
+.corner-badge {
+    position: absolute; 
+    top: 15px; /* Jarak kecil dari atas kartu */
+    background-color: rgba(240, 242, 245, 0.9);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    /* ... style lainnya tetap ... */
+}
+
+/* POSISI SPESIFIK (Ganti nilai 350px dengan nilai kecil) */
+.date-pos {
+    left: 15px; /* Menempel di pojok kiri atas kartu */
+}
+
+.time-pos {
+    right: 15px; /* Menempel di pojok kanan atas kartu */
+}
+
+/* RESPONSIVE HP: Kalau di HP, jangan tabrakan */
+@media (max-width: 600px) {
+    .corner-badge {
+        position: static; /* Gak usah melayang kalau di HP */
+        display: inline-flex;
+        margin: 5px;
+        font-size: 0.75rem;
+        width: auto;
+        justify-content: center;
+    }
+    
+    /* Buat wadah baru biar rapi di HP (Opsional) */
+    .mobile-clock-container {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-bottom: 15px;
+    }
+}
+
+body {
+    /* Menggunakan Flexbox untuk memusatkan konten secara vertikal & horizontal */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    
+    /* Pastikan tinggi body minimal setinggi layar browser */
+    min-height: 100vh;
+    margin: 0;
+    
+    /* Agar background tidak ikut bergeser aneh saat zoom */
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    
+    /* Mencegah scroll ke samping jika tidak perlu */
+    overflow-x: hidden; 
+}
+
+.login-box { /* Ganti '.login-box' sesuai nama class di HTML kamu */
+    background-color: white;
+    padding: 40px;
+    border-radius: 15px; /* Sesuaikan lengkungan sudut */
+    
+    /* --- BAGIAN KUNCI AGAR RESPONSIF SAAT ZOOM --- */
+    
+    /* 1. Gunakan lebar persentase, bukan pixel mati */
+    width: 90%; 
+    
+    /* 2. Beri batas maksimal agar tidak kelebaran di layar normal (100%) */
+    max-width: 800px; 
+    
+    /* 3. Margin otomatis untuk keamanan tambahan */
+    margin: 20px auto; 
+    
+    /* Tambahan kosmetik */
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    text-align: center;
+}

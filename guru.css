@@ -1,0 +1,247 @@
+/* GLOBAL STYLE */
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #f4f6f9;
+    color: #333;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* LOGIN OVERLAY */
+.login-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+.login-box {
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    text-align: center;
+    width: 300px;
+}
+.login-box input {
+    padding: 10px;
+    width: 80%;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+.login-box button {
+    padding: 10px 20px;
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+/* HEADER & CARDS */
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.header-actions button {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 600;
+    margin-left: 10px;
+    transition: 0.3s;
+}
+
+.btn-refresh { background: #6c757d; color: white; }
+.btn-refresh:hover { background: #5a6268; }
+
+.btn-download { background: #28a745; color: white; }
+.btn-download:hover { background: #218838; }
+
+.stats-cards {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.card {
+    background: white;
+    flex: 1;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+.card h3 { margin: 0 0 10px 0; font-size: 0.9rem; color: #777; }
+.card span { font-size: 2rem; font-weight: bold; }
+
+/* TABLE STYLE */
+.table-container {
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 15px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+th {
+    background-color: #343a40;
+    color: white;
+    font-weight: 500;
+}
+
+tr:hover { background-color: #f8f9fa; }
+
+/* BADGES */
+.badge {
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+.badge-correct { background: #d4edda; color: #155724; }
+.badge-wrong { background: #f8d7da; color: #721c24; }
+
+/* ... css lama ... */
+
+/* =========================================
+   STYLE KHUSUS FITUR HAPUS
+   ========================================= */
+
+/* 1. Tombol Hapus Massal (Merah Besar) */
+.btn-danger-massal {
+    background-color: #dc3545; /* Merah */
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    
+    /* PENTING: Default sembunyi, dimunculkan oleh JS */
+    display: none; 
+    align-items: center;
+    gap: 10px;
+    
+    box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+    transition: all 0.3s ease;
+}
+
+.btn-danger-massal:hover {
+    background-color: #c82333; /* Merah lebih gelap */
+    transform: translateY(-2px); /* Efek naik dikit */
+}
+
+/* 2. Checkbox (Biar lebih besar & enak diklik) */
+input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: #dc3545; /* Warna merah saat dicentang */
+    vertical-align: middle;
+}
+
+/* 3. Tombol Hapus Satuan (Tong Sampah Kecil di Tabel) */
+/* Class ini nanti dipakai di dalam JavaScript saat render tabel */
+.btn-delete-small {
+    background-color: white;
+    color: #dc3545;
+    border: 1px solid #dc3545;
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    margin-left: 8px;
+    transition: 0.3s;
+}
+
+.btn-delete-small:hover {
+    background-color: #dc3545;
+    color: white;
+}
+
+/* =========================================
+   STYLE KHUSUS FITUR HAPUS (NEW STYLE)
+   ========================================= */
+
+/* 1. Tombol Hapus Massal (Merah Gradasi & Glowing) */
+/* Di file guru.css */
+.btn-danger-massal {
+    /* Gradasi Merah Keren */
+    background: linear-gradient(135deg, #ff416c, #ff4b2b);
+    color: white;
+    border: none;
+    padding: 10px 25px;
+    border-radius: 50px; /* Bentuk Kapsul */
+    font-weight: 600;
+    cursor: pointer;
+    
+    /* Layout */
+    display: none; 
+    align-items: center;
+    gap: 10px;
+    
+    /* Efek Glowing */
+    box-shadow: 0 4px 15px rgba(255, 75, 43, 0.4);
+    transition: all 0.3s ease;
+}
+
+.btn-danger-massal:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(255, 75, 43, 0.6);
+}
+
+.btn-danger-massal span {
+    background: rgba(255,255,255,0.2);
+    padding: 2px 8px;
+    border-radius: 10px;
+}
+
+/* 2. Tombol Hapus Satuan (Tong Sampah di Tabel) */
+.btn-delete-small {
+    background-color: white;
+    color: #ff4b2b; /* Warna teks merah */
+    border: 2px solid #ff4b2b; /* Garis tepi tebal */
+    
+    padding: 6px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    
+    /* JARAK DENGAN TOMBOL LIHAT */
+    margin-left: 10px; 
+    
+    transition: 0.3s;
+}
+
+.btn-delete-small:hover {
+    background-color: #ff4b2b; /* Saat hover jadi merah full */
+    color: white;
+    box-shadow: 0 2px 8px rgba(255, 75, 43, 0.4);
+}

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Selamat! - LKPD Selesai</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&family=Fredoka:wght@500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="closing.css">
+</head>
+<body class="success-body">
+
+    <div class="success-card">
+        <div class="success-icon">
+            <i class="fa-solid fa-medal fa-beat"></i>
+        </div>
+        <h2>Selamat!</h2>
+        <p>Kamu telah menyelesaikan LKPD materi <br><strong>Persamaan Garis Lurus</strong> dengan baik.</p>
+        <div class="success-footer">Semoga sukses!</div>
+        
+        <div style="margin-top: 30px;">
+            <a href="index.html" style="text-decoration: none; color: #155724; font-size: 0.9rem;">
+                <i class="fa-solid fa-arrow-left"></i> Kembali ke Halaman Utama
+            </a>
+        </div>
+
+        <div style="margin-top: 20px; border-top: 1px dashed #ccc; padding-top: 20px;">
+    <button onclick="lihatHasilSaya()" style="background: none; border: 2px solid #155724; color: #155724; padding: 10px 20px; border-radius: 50px; cursor: pointer; font-weight: bold;">
+        <i class="fa-solid fa-eye"></i> Lihat Jawaban Saya
+    </button>
+</div>
+
+        <div id="reviewArea" style="display: none; margin-top: 20px; text-align: left; background: rgba(255,255,255,0.9); padding: 15px; border-radius: 10px; max-height: 300px; overflow-y: auto;">
+            <h4 style="margin-top: 0; text-align: center; color: #333;">Rekap Jawabanmu</h4>
+            <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+                <thead>
+                    <tr style="border-bottom: 2px solid #ddd;">
+                        <th style="padding: 8px; text-align: left;">Pertanyaan</th>
+                        <th style="padding: 8px; text-align: left;">Jawabanmu</th>
+                        <th style="padding: 8px; text-align: center;">Status</th>
+                    </tr>
+                </thead>
+                <tbody id="reviewTableBody">
+                    </tbody>
+            </table>
+        </div>
+
+    <script src="closing.js"></script>
+</body>
+</html>
