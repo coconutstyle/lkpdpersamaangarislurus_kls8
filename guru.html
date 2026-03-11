@@ -19,7 +19,18 @@
             background: rgba(0,0,0,0.9); z-index: 999;
             display: flex; justify-content: center; align-items: center;
         }
-        .login-box { background: white; padding: 40px; border-radius: 12px; text-align: center; width: 300px; }
+        .login-box { background: white; padding: 40px; border-radius: 12px; text-align: center; width: 300px; position: relative; }
+        .btn-close-login {
+            position: absolute !important; top: 12px !important; right: 14px !important;
+            background: none !important; border: none !important;
+            font-size: 1.3rem; color: #aaa !important;
+            cursor: pointer; line-height: 1;
+            transition: color 0.2s; outline: none !important;
+            padding: 0 !important; box-shadow: none !important;
+            font-weight: normal !important;
+        }
+        .btn-close-login:hover { color: #333 !important; background: none !important; }
+        .btn-close-login:focus { outline: none !important; background: none !important; }
         input { padding: 10px; width: 90%; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; }
         .btn { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; color: white; font-weight: bold; }
         .btn-blue { background: #007bff; }
@@ -57,6 +68,7 @@
     
     <div id="loginOverlay" class="login-overlay">
         <div class="login-box">
+            <button class="btn-close-login" onclick="window.history.back()"><i class="fa-solid fa-xmark"></i></button>
             <h2><i class="fa-solid fa-lock"></i> Akses Guru</h2>
             <p>Masukkan Password Dengan Benar!</p>
             <input type="password" id="pinInput" placeholder="Ketik password...">

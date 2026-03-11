@@ -23,15 +23,16 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 1. TAMPILAN KELOMPOK
     const elSelect = document.getElementById('kelompok-siswa');
-    const savedKel = localStorage.getItem('kelompok-siswa');
-    if (elSelect && savedKel) {
-        const textSpan = document.createElement('span');
-        textSpan.innerHTML = `<strong>Kelompok ${savedKel}</strong>`;
-        textSpan.style.textAlign = 'left'; textSpan.style.width = '100%'; textSpan.style.color = '#333'; textSpan.style.padding = '5px 0'; textSpan.style.flexGrow = '1';
+    if (elSelect) {
+        const textSpan = document.createElement('div');
+        textSpan.innerHTML = `<strong>Kelompok 4</strong>`;
+        textSpan.style.cssText = "text-align: left; width: 100%; color: #333; padding: 10px 0; font-size: 1rem;";
         const hiddenInput = document.createElement('input');
-        hiddenInput.type = 'hidden'; hiddenInput.id = 'kelompok-siswa'; hiddenInput.value = savedKel;
-        elSelect.parentNode.replaceChild(textSpan, elSelect);
-        textSpan.parentNode.appendChild(hiddenInput);
+        hiddenInput.type = 'hidden'; hiddenInput.id = 'kelompok-siswa'; hiddenInput.value = '4';
+        if (elSelect.parentNode) {
+            elSelect.parentNode.replaceChild(textSpan, elSelect);
+            textSpan.parentNode.appendChild(hiddenInput);
+        }
     }
 
     // 2. INISIALISASI GRAFIK
@@ -104,8 +105,15 @@ document.addEventListener('DOMContentLoaded', function() {
     if (isReviewMode) {
         document.body.classList.add('review-mode-active');
         
-        setupOnlineComments(); 
-        showReviewBanner();
+        // Banner MODE REVIEW (kuning) - hanya untuk siswa, bukan guru
+        if (!siswaName) {
+            const reviewBanner = document.createElement('div');
+            reviewBanner.style.cssText = "position: fixed; top: 0; left: 0; width: 100%; background: #FFC107; color: #333; text-align: center; padding: 12px; font-weight: bold; font-size: 16px; z-index: 10000; box-shadow: 0 2px 5px rgba(0,0,0,0.2);";
+            reviewBanner.innerHTML = '<i class="fa-solid fa-eye"></i> MODE REVIEW: Jawaban Anda telah tersimpan.';
+            document.body.prepend(reviewBanner);
+            document.body.style.paddingTop = '50px';
+            setupOnlineComments();
+        }
         
         setTimeout(async () => {
             let dataToLoad = null;
@@ -215,6 +223,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (dataToLoad) {
                 isiFormulirOtomatis(dataToLoad);
                 disableInputs();
+                tampilkanStatusJawaban(dataToLoad);
             }
         }, 500);
     }
@@ -452,13 +461,25 @@ function isiFormulirOtomatis(data) {
                 el.value = item.answer;
                 if (item.is_correct === true) el.style.backgroundColor = '#d4edda';
                 else if (item.is_correct === false) el.style.backgroundColor = '#f8d7da';
+                if (item.question === 'Kesimpulan' && item.answer === 'Ya') {
+                    const s = document.getElementById('finalEquationSection');
+                    if (s) s.classList.remove('hidden');
+                }
+                if (item.question === 'Kesimpulan' && item.answer === 'Tidak') {
+                    const s = document.getElementById('reasonSection');
+                    if (s) s.classList.remove('hidden');
+                }
+
                 
                 if (item.question === 'Link Presentasi') {
-                    const btnOpen = document.createElement('a');
-                    btnOpen.href = item.answer; btnOpen.target = "_blank";
-                    btnOpen.innerHTML = '<i class="fa-solid fa-external-link-alt"></i> Buka Link';
-                    btnOpen.style.cssText = "display:block; margin-top:5px; padding:5px; background:#2196F3; color:white; text-align:center; border-radius:5px; text-decoration:none;";
-                    el.parentNode.appendChild(btnOpen);
+                    if (!el.parentNode.querySelector('a.btn-buka-link')) {
+                        const btnOpen = document.createElement('a');
+                        btnOpen.href = item.answer; btnOpen.target = "_blank";
+                        btnOpen.className = 'btn-buka-link';
+                        btnOpen.innerHTML = '<i class="fa-solid fa-external-link-alt"></i> Buka Link';
+                        btnOpen.style.cssText = "display:block; margin-top:5px; padding:5px; background:#2196F3; color:white; text-align:center; border-radius:5px; text-decoration:none;";
+                        el.parentNode.appendChild(btnOpen);
+                    }
                 }
             }
         }
@@ -469,15 +490,6 @@ function isiFormulirOtomatis(data) {
 }
 
 // --- Fungsi Show Review Banner ---
-function showReviewBanner() {
-    const banner = document.createElement('div');
-    banner.className = 'review-banner';
-    // Style Inline agar pasti muncul
-    banner.style.cssText = "position: fixed; top: 0; left: 0; width: 100%; background: #FFEB3B; color: #333; text-align: center; padding: 15px; font-weight: bold; font-size: 16px; z-index: 10000; box-shadow: 0 2px 5px rgba(0,0,0,0.2);";
-    banner.innerHTML = '<i class="fa-solid fa-eye"></i> MODE REVIEW: Jawaban Anda telah tersimpan.';
-    document.body.prepend(banner);
-    document.body.style.marginTop = '60px';
-}
 
 function disableInputs() {
     document.querySelectorAll('input, select, textarea, button').forEach(el => {
@@ -572,13 +584,11 @@ async function checkAnswer(type) {
             feedback.innerHTML = message; feedback.className = 'feedback wrong'; return;
         }
         let ans = rawInput.replace(/\s/g, '');
-        if (VALID_ANSWERS.some(kunci => ans.includes(kunci.replace("y=", "")))) {
+        if (VALID_ANSWERS.some(kunci => { const k = kunci.replace("y=",""); return ans === k || ans === "y="+k; })) {
             isCorrect = true;
             message = '<i class="fa-solid fa-check-circle"></i> <strong>Benar!</strong> Rumus akhirnya adalah <strong>y = 2.5x - 3 </strong> (atau 2,5x - 3).';
-            await saveAnswer('Metode Karyawan B', rawInput, true);
         } else {
             message = '<i class="fa-solid fa-circle-xmark"></i> Kurang tepat. Cek lagi operasi pada persamaannya!';
-            await saveAnswer('Metode Karyawan B', rawInput, false);
         }
     } 
     else if (type === 'metode2') { 
@@ -595,13 +605,11 @@ async function checkAnswer(type) {
             message = `<i class="fa-solid fa-circle-exclamation"></i> Gradien salah. Hitung kembali gradiennya.`;
             feedback.innerHTML = message; feedback.className = 'feedback wrong'; return;
         }
-        if (VALID_ANSWERS.some(kunci => rawInput.includes(kunci.replace("y=", "")))) {
+        if (VALID_ANSWERS.some(kunci => { const k = kunci.replace("y=",""); return rawInput === k || rawInput === "y="+k; })) {
             isCorrect = true;
             message = '<i class="fa-solid fa-check-circle"></i> <strong>Sempurna!</strong> Siti menemukan laju pertumbuhan tanaman kacang hijau adalah 2.5 cm/hari.';
-            await saveAnswer('Metode Karyawan A', document.getElementById('jawab_metode2').value, true);
         } else {
             message = '<i class="fa-solid fa-circle-xmark"></i> Gradien benar, tapi persamaan akhirnya salah hitung.';
-            await saveAnswer('Metode Karyawan A', document.getElementById('jawab_metode2').value, false);
         }
     }
     else if (type === 'kesimpulan') {
@@ -629,10 +637,8 @@ async function checkAnswer(type) {
         if (Math.abs(ans - 32) <= 0) {
             isCorrect = true;
             message = '<i class="fa-solid fa-check-circle"></i> <strong>Benar!</strong> Tinggi tanaman kacang hijau setelah ditanam 2 minggu adalah 32 cm';
-            await saveAnswer('Menanam 2 Minggu', ansRaw, true);
         } else {
             message = '<i class="fa-solid fa-circle-xmark"></i> Salah. Substitusi nilai x = 14 pada persamaan final.';
-            await saveAnswer('Menanam 2 Minggu', ansRaw, false);
         }
     }
     // --- UJI COBA 2 (Tinggi 50 cm) ---
@@ -645,10 +651,8 @@ async function checkAnswer(type) {
         if (!isNaN(ans) && Math.abs(ans - 20) <= 0) {
             isCorrect = true;
             message = '<i class="fa-solid fa-check-circle"></i> <strong>Benar!</strong> Waktu yang dibutuhkan agar tanaman mencapai tinggi 47 cm adalah 20 hari.';
-            await saveAnswer('Waktu Tanaman Mencapai Tinggi', ansString, true);
         } else {
             message = '<i class="fa-solid fa-circle-xmark"></i> Salah. Substitusi nilai y = 47 pada persamaan finalmu.';
-            await saveAnswer('Waktu Tanaman Mencapai Tinggi', ansString, false);
         }
     }
     feedback.innerHTML = message;
@@ -671,13 +675,11 @@ async function checkCoordAnswer(point) {
         feedback.className = 'feedback correct';
         
         // [VALIDASI BARU] Simpan ke database
-        await saveAnswer(`Koordinat Titik ${point}`, `(${inputX}, ${inputY})`, true);
     } else {
         feedback.innerHTML = `<i class="fa-solid fa-circle-xmark"></i> Salah. Cek lagi soal ceritanya.`;
         feedback.className = 'feedback wrong';
         
         // [VALIDASI BARU] Simpan ke database
-        await saveAnswer(`Koordinat Titik ${point}`, `(${inputX}, ${inputY})`, false);
     }
 }
 
@@ -699,7 +701,6 @@ async function checkGraphPoints() {
         feedback.className = 'feedback correct'; // Warna Hijau
         
         // [VALIDASI BARU] Simpan ke database
-        await saveAnswer('Visualisasi Grafik Kartesius', 'Kedua titik benar', true);
     } 
     
     // KONDISI 2: BARU MENEMUKAN SATU TITIK (A SAJA)
@@ -711,7 +712,6 @@ async function checkGraphPoints() {
         feedback.className = 'feedback wrong'; // Warna Merah (atau kuning jika diatur CSS)
         
         // [VALIDASI BARU] Simpan ke database
-        await saveAnswer('Visualisasi Grafik Kartesius', 'Hanya titik A benar', false);
     } 
     
     // KONDISI 2: BARU MENEMUKAN SATU TITIK (B SAJA)
@@ -723,7 +723,6 @@ async function checkGraphPoints() {
         feedback.className = 'feedback wrong';
         
         // [VALIDASI BARU] Simpan ke database
-        await saveAnswer('Visualisasi Grafik Kartesius', 'Hanya titik B benar', false);
     } 
     
     // KONDISI 3: BELUM MENEMUKAN SAMA SEKALI
@@ -740,7 +739,6 @@ async function checkGraphPoints() {
             feedback.className = 'feedback wrong';
             
             // [VALIDASI BARU] Simpan ke database
-            await saveAnswer('Visualisasi Grafik Kartesius', 'Kedua titik salah', false);
         }
     }
 }
@@ -758,9 +756,9 @@ function submitReason() {
 }
 
 function checkFinalEquation() {
-    const equation = document.getElementById('finalEquation').value.toLowerCase().replace(/\s/g, '');
+    const equation = document.getElementById('finalEquation').value.toLowerCase().replace(/\s/g, '').replace(/,/g, '.');
     const feedback = document.getElementById('finalFeedback');
-    if (equation.includes('2.5x-3') || equation.includes('2,5x-3')) {
+    if (equation === '2.5x-3' || equation === 'y=2.5x-3' || equation === '2.5x-3' || equation === 'y=2.5x-3') {
         feedback.innerHTML = '<i class="fa-solid fa-check-circle"></i> <strong>Benar!</strong> Persamaan final telah dikonfirmasi.';
         feedback.className = 'feedback correct';
     } else {
@@ -799,7 +797,7 @@ function checkDevAnswer(num) {
 }
 
 function checkCompletion() {
-    const ids = ['coordAx', 'jawab_metode1', 'jawab_gradien', 'jawab_metode2', 'jawab_kesimpulan', 'finalEquation', 'jawab5', 'jawab6', 'devAnswer1', 'devAnswer2'];
+    const ids = ['coordAx', 'jawab_metode1', 'jawab_gradien', 'jawab_metode2', 'jawab_kesimpulan', 'jawab5', 'jawab6', 'devAnswer1', 'devAnswer2', 'kesimpulan1', 'kesimpulan2'];
     const allFilled = ids.every(id => { const el = document.getElementById(id); return el && el.value.trim() !== ''; });
     
     // Cek juga chart
@@ -831,7 +829,20 @@ function saveLink() {
 // =========================================
 
 function validateAndOpenModal() {
-    const ids = ['nama-siswa', 'kelompok-siswa', 'coordAx', 'coordAy', 'coordBx', 'coordBy', 'jawab_metode1', 'jawab_gradien', 'jawab_metode2', 'jawab_kesimpulan', 'finalEquation', 'jawab5', 'jawab6', 'devAnswer1', 'devAnswer2'];
+    let ids = ['nama-siswa', 'kelompok-siswa', 'coordAx', 'coordAy', 'coordBx', 'coordBy', 'jawab_metode1', 'jawab_gradien', 'jawab_metode2', 'jawab_kesimpulan', 'jawab5', 'jawab6', 'devAnswer1', 'devAnswer2', 'kesimpulan1', 'kesimpulan2'];
+
+    // Validasi bercabang berdasarkan jawaban refleksi
+    const refleksiEl = document.getElementById('jawab_kesimpulan');
+    const refleksiJawab = refleksiEl ? refleksiEl.value : '';
+    if (refleksiJawab === 'Ya') {
+        if (!ids.includes('finalEquation')) ids.push('finalEquation');
+        ids = ids.filter(id => id !== 'reasonText');
+    } else if (refleksiJawab === 'Tidak') {
+        if (!ids.includes('reasonText')) ids.push('reasonText');
+        ids = ids.filter(id => id !== 'finalEquation');
+    } else {
+        ids = ids.filter(id => id !== 'finalEquation' && id !== 'reasonText');
+    }
     let emptyCount = 0;
     ids.forEach(id => {
         const el = document.getElementById(id);
@@ -854,11 +865,7 @@ async function confirmSubmission() {
     const sName = document.getElementById('nama-siswa').value || 'Tanpa Nama';
     let dataToSave = [];
 
-    const isEq = (v) => {
-        if(!v) return false;
-        const clean = v.toLowerCase().replace(/\s/g,'').replace(/,/g, '.');
-        return clean.includes('2.5x') && clean.includes('-3');
-    };
+    const isEq = (v) => { if(!v) return false; const c = v.toLowerCase().replace(/\s/g,'').replace(/,/g, '.'); return c === '2.5x-3' || c === 'y=2.5x-3' || c === '2.5x-3' || c === 'y=2.5x-3'; };
     const pushData = (q, ans, corr) => dataToSave.push({ student_name: sName, question: q, answer: ans, is_correct: corr });
 
     // === VALIDASI SOAL UTAMA ===
@@ -902,35 +909,49 @@ async function confirmSubmission() {
     const points = window.simpanTitik || [];
     const hasA = points.some(p => Math.abs(p.x - 4) <= 0 && Math.abs(p.y - 7) <= 0);
     const hasB = points.some(p => Math.abs(p.x - 10) <= 0 && Math.abs(p.y - 22) <= 0);
-    pushData('Visualisasi Grafik Kartesius', JSON.stringify(window.simpanTitik), true);
-    pushData('Visualisasi Grafik Kartesius', `${points.length} titik`, hasA && hasB);
+    pushData('Visualisasi Grafik Kartesius', JSON.stringify(window.simpanTitik), hasA && hasB);
     
     // 5. Refleksi (Ya atau Tidak)
     const kes = document.getElementById('jawab_kesimpulan');
-    if(kes) pushData('Kesimpulan', kes.value, kes.value === 'Ya' || kes.value === 'Tidak');
+    if(kes) {
+        pushData('Kesimpulan', kes.value, kes.value === 'Ya');
+        if (kes.value === 'Ya') {
+            const final = document.getElementById('finalEquation');
+            if(final) pushData('Persamaan Final', final.value, isEq(final.value));
+        } else if (kes.value === 'Tidak') {
+            const alasanKesimpulan = document.getElementById('reasonText').value;
+            pushData('Alasan Kesimpulan', alasanKesimpulan, false);
+        }
+    }
     
-    // 6. Persamaan Final
-    const final = document.getElementById('finalEquation');
-    if(final) pushData('Persamaan Final', final.value, isEq(final.value));
-    
-    // 7. Analisis Rumus (>15 karakter = benar)
-    const dev1 = document.getElementById('devAnswer1');
-    if(dev1) pushData('Analisis Rumus', dev1.value, dev1.value.length > 15);
-    
+    // 7. Analisis Rumus (m, gradien, gradient, kemiringan = benar)
+    const analisisRumus = document.getElementById('devAnswer1').value;
+    pushData('Analisis Rumus', analisisRumus, 
+    ['gradien','kemiringan','m','gradient'].some(k => analisisRumus.toLowerCase().trim().includes(k)));
+
     // 8. Kapan Menggunakan Metode (>15 karakter = benar)
     const dev2 = document.getElementById('devAnswer2');
     if(dev2) pushData('Pendapat Kelompok', dev2.value, dev2.value.length > 15);
 
     // === DATA INFO (TIDAK DIVALIDASI) ===
     const kel = document.getElementById('kelompok-siswa');
-    if(kel) pushData('Info Kelompok', kel.value, null);
+    pushData('Kesimpulan Konsep', document.getElementById('kesimpulan1').value, document.getElementById('kesimpulan1').value.trim().length >= 20);
+    pushData('Kesimpulan Kontekstual', document.getElementById('kesimpulan2').value, document.getElementById('kesimpulan2').value.trim().length >= 20);
+    pushData('Info Kelompok', '4', false);
 
     // Link
     const linkPres = document.getElementById('link_presentasi');
-    if (linkPres && linkPres.value) pushData('Link Presentasi', linkPres.value, null);
+    if (linkPres && linkPres.value) pushData('Link Presentasi', linkPres.value, false);
 
     // KIRIM KE SUPABASE
-    if (supabaseClient) await supabaseClient.from('student_answers').insert(dataToSave);
+    if (supabaseClient) {
+        const { error: insertError } = await supabaseClient.from('student_answers').insert(dataToSave);
+        if (insertError) {
+            alert('Gagal menyimpan jawaban ke database: ' + insertError.message + '\nSilakan hubungi guru.');
+            if(btn) { btn.innerText = 'Simpan & Selesai'; btn.disabled = false; }
+            return;
+        }
+    }
     
     // Simpan Lokal
     localStorage.removeItem('dataReviewSiswa');
@@ -963,6 +984,22 @@ async function saveAnswer(question, answer, isCorrect) {
 // =========================================
 // 6. MODE GURU (UPDATED)
 // =========================================
+
+// =========================================
+// FASE 5: KESIMPULAN
+// =========================================
+function checkKesimpulan(num) {
+    const feedback = document.getElementById('feedbackKesimpulan' + num);
+    const ans = document.getElementById('kesimpulan' + num).value.trim();
+    if (ans.length < 20) {
+        feedback.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i> Jawaban terlalu singkat. Jelaskan lebih lengkap!';
+        feedback.className = 'feedback wrong';
+    } else {
+        feedback.innerHTML = '<i class="fa-solid fa-check-circle"></i> Jawaban telah disimpan. Terima kasih!';
+        feedback.className = 'feedback correct';
+    }
+}
+
 window.addEventListener('load', async function() {
     const urlParams = new URLSearchParams(window.location.search);
     const namaSiswa = urlParams.get('siswa');
@@ -971,6 +1008,7 @@ window.addEventListener('load', async function() {
         // Tampilkan banner mode koreksi segera
         const banner = document.createElement('div');
         banner.className = 'review-banner';
+        banner.style.cssText = "position: fixed; top: 0; left: 0; right: 0; background: #ff9800; color: white; padding: 15px 20px; text-align: center; font-weight: bold; font-size: 16px; z-index: 9999; box-shadow: 0 2px 10px rgba(0,0,0,0.2);";
         banner.innerHTML = `<i class="fa-solid fa-lock"></i> MODE KOREKSI: Jawaban <strong>${namaSiswa}</strong>`;
         document.body.prepend(banner);
         document.body.style.marginTop = '60px';
@@ -997,3 +1035,147 @@ window.addEventListener('load', async function() {
         }
     }
 });
+
+// =========================================
+// FITUR TAMPILAN BENAR/SALAH MODE REVIEW
+// =========================================
+
+function tampilkanStatusJawaban(data) {
+    const urlParams = new URLSearchParams(window.location.search);
+    const isReviewMode = urlParams.get('mode') === 'review';
+    const isGuruMode = urlParams.get('siswa');
+    if (!isReviewMode && !isGuruMode) return;
+
+    const soalDiabaikan = ['Info Kelompok', 'nama-siswa', 'Link Presentasi', 'KOMENTAR_KEL_1', 'KOMENTAR_KEL_2', 'KOMENTAR_KEL_3', 'KOMENTAR_KEL_4', 'KOMENTAR_KEL_5'];
+    const soalData = data.filter(item =>
+        !soalDiabaikan.includes(item.question) &&
+        item.is_correct !== null &&
+        item.is_correct !== undefined
+    );
+
+    const totalSoal = soalData.length;
+    const totalBenar = soalData.filter(item => item.is_correct === true).length;
+
+    // --- Ikon ✅/❌ di setiap input field ---
+    if (isGuruMode) {
+    setTimeout(() => {
+        document.querySelectorAll('input, select, textarea').forEach(el => {
+            if (el.disabled && el.style.backgroundColor &&
+                (el.style.backgroundColor === 'rgb(212, 237, 218)' ||
+                 el.style.backgroundColor === 'rgb(248, 215, 218)')) {
+
+                if (el.parentElement.querySelector('.review-status-icon')) return;
+                if (el.type === 'hidden') return;
+
+                const isBenar = el.style.backgroundColor === 'rgb(212, 237, 218)';
+                const icon = document.createElement('span');
+                icon.className = 'review-status-icon ' + (isBenar ? 'benar' : 'salah');
+                icon.innerHTML = isBenar
+                    ? '<i class="fa-solid fa-circle-check"></i>'
+                    : '<i class="fa-solid fa-circle-xmark"></i>';
+                el.insertAdjacentElement('afterend', icon);
+            }
+        });
+
+        // Ikon grafik kartesius
+        const grafik = data.find(item =>
+            item.question === 'Visualisasi Grafik Kartesius' || item.question === 'Grafik Chart'
+        );
+        if (grafik) {
+            const grafikFeedback = document.getElementById('graphFeedback');
+            if (grafikFeedback && !grafikFeedback.querySelector('.review-status-icon')) {
+                grafikFeedback.innerHTML = grafik.is_correct
+                    ? '<i class="fa-solid fa-circle-check"></i> <strong>Grafik Benar!</strong> Titik A dan B terpasang dengan tepat.'
+                    : '<i class="fa-solid fa-circle-xmark"></i> <strong>Grafik Belum Tepat.</strong> Titik yang diplot belum sesuai.';
+                grafikFeedback.className = grafik.is_correct ? 'feedback correct' : 'feedback wrong';
+            }
+        }
+
+        // Ikon koordinat A & B
+        const koordinatA = data.find(item => item.question === 'Koordinat A' || item.question === 'Koordinat Titik A');
+        const koordinatB = data.find(item => item.question === 'Koordinat B' || item.question === 'Koordinat Titik B');
+        const coordFeedback = document.getElementById('coordFeedback');
+        if (coordFeedback && (koordinatA || koordinatB)) {
+            const aBenar = koordinatA ? koordinatA.is_correct : false;
+            const bBenar = koordinatB ? koordinatB.is_correct : false;
+            const ikonA = aBenar ? '✅' : '❌';
+            const ikonB = bBenar ? '✅' : '❌';
+            coordFeedback.innerHTML = `${ikonA} Titik A: <strong>${aBenar ? 'Benar' : 'Salah'}</strong> &nbsp;|&nbsp; ${ikonB} Titik B: <strong>${bBenar ? 'Benar' : 'Salah'}</strong>`;
+            coordFeedback.className = (aBenar && bBenar) ? 'feedback correct' : 'feedback wrong';
+        }
+    }, 300);
+    }
+
+     // --- Panel Ringkasan Skor (HANYA MODE GURU) ---
+    if (isGuruMode) {
+        // --- Panel Ringkasan Skor ---
+        const persen = totalSoal > 0 ? Math.round((totalBenar / totalSoal) * 100) : 0;
+        let warnaPanel, emoji, predikat;
+        if (persen >= 80) { warnaPanel = '#28a745'; emoji = '🏆'; predikat = 'Sangat Baik'; }
+        else if (persen >= 60) { warnaPanel = '#fd7e14'; emoji = '📝'; predikat = 'Cukup Baik'; }
+        else { warnaPanel = '#dc3545'; emoji = '📌'; predikat = 'Perlu Perhatian'; }
+
+        // Buat detail item per soal (pakai class CSS)
+        let detailHTML = '<div class="review-detail-label">Detail Per Soal</div>';
+        soalData.forEach(item => {
+            const status = item.is_correct ? 'benar' : 'salah';
+            const ikonClass = item.is_correct ? 'fa-circle-check' : 'fa-circle-xmark';
+            const jawaban = item.answer
+                ? (item.answer.length > 60 ? item.answer.substring(0, 60) + '...' : item.answer)
+                : '(kosong)';
+            detailHTML += `
+                <div class="review-detail-item ${status}">
+                    <div class="review-detail-icon ${status}">
+                        <i class="fa-solid ${ikonClass}"></i>
+                    </div>
+                    <div class="review-detail-text">
+                        <div class="review-detail-question">${item.question}</div>
+                        <div class="review-detail-answer">${jawaban}</div>
+                    </div>
+                </div>`;
+        });
+
+        // Bangun panel (style inline HANYA untuk nilai dinamis: warna & persentase)
+        const panel = document.createElement('div');
+        panel.id = 'review-score-panel';
+        panel.style.borderTop = `5px solid ${warnaPanel}`;
+        panel.innerHTML = `
+            <div class="review-panel-header">
+                <div class="review-panel-title-row">
+                    <h4>${emoji} Hasil Jawaban Siswa</h4>
+                    <button class="btn-toggle-panel" id="btnTogglePanel" onclick="toggleReviewPanel()">Ciutkan</button>
+                </div>
+                <div class="review-score-row">
+                    <div class="review-score-ring" style="background: conic-gradient(${warnaPanel} ${persen * 3.6}deg, #eee 0deg);">
+                        <div class="review-score-ring-inner" style="color: ${warnaPanel};">${persen}%</div>
+                    </div>
+                    <div>
+                        <div class="review-score-number" style="color: ${warnaPanel};">${totalBenar} / ${totalSoal}</div>
+                        <div class="review-score-label">Jawaban Benar</div>
+                        <div class="review-score-badge" style="background: ${warnaPanel}22; color: ${warnaPanel};">${predikat}</div>
+                    </div>
+                </div>
+            </div>
+            <div id="review-detail-list">${detailHTML}</div>
+        `;
+
+        document.body.appendChild(panel);
+        document.body.classList.add('review-panel-open');
+    }
+}
+function toggleReviewPanel() {
+    const detail = document.getElementById('review-detail-list');
+    const btn = document.getElementById('btnTogglePanel');
+    const panel = document.getElementById('review-score-panel');
+    if (!detail) return;
+
+    if (detail.style.display === 'none') {
+        detail.style.display = '';
+        btn.textContent = 'Ciutkan';
+        panel.style.maxHeight = 'calc(100vh - 80px)';
+    } else {
+        detail.style.display = 'none';
+        btn.textContent = 'Perluas';
+        panel.style.maxHeight = '';
+    }
+}

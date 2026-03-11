@@ -9,28 +9,33 @@ function simpanDanMasuk() {
     }
 
     // 3. Simpan ke LocalStorage
-    // Ini penting agar nanti nama kelompok muncul otomatis di pojok kanan atas LKPD
     localStorage.setItem('kelompok-siswa', kelompok);
 
-    // 4. Logika Arahkan Halaman (Redirect)
-    // Sesuaikan nama file tujuan di sini
+    // 4. Arahkan ke halaman LKPD sesuai kelompok
     switch (kelompok) {
         case "1":
-            window.location.href = 'lkpdkel1.html'; // Masuk ke soal Bensin
+            window.location.href = 'lkpdkel1.html';
             break;
         case "2":
-            window.location.href = 'lkpdkel2.html'; // Masuk ke soal Percetakan
+            window.location.href = 'lkpdkel2.html';
             break;
         case "3":
-            // Pastikan file lkpd.html yang asli (Listrik) sudah kamu rename jadi lkpd_3.html
-            // Atau ganti baris ini menjadi: window.location.href = 'lkpd.html';
-            window.location.href = 'lkpdkel3.html'; 
+            window.location.href = 'lkpdkel3.html';
             break;
         case "4":
-            window.location.href = 'lkpdkel4.html'; // Masuk ke soal Taksi
+            window.location.href = 'lkpdkel4.html';
             break;
         case "5":
-            window.location.href = 'lkpdkel5.html'; // Masuk ke soal Katering
+            window.location.href = 'lkpdkel5.html';
+            break;
+        case "6":
+            window.location.href = 'lkpdkel6.html'; // Kolam Renang
+            break;
+        case "7":
+            window.location.href = 'lkpdkel7.html'; // Tinta Pulpen
+            break;
+        case "8":
+            window.location.href = 'lkpdkel8.html'; // Harga Emas
             break;
         default:
             alert("Terjadi kesalahan pilihan.");

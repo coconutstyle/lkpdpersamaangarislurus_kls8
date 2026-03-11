@@ -1,9 +1,8 @@
 // =========================================
-// 1. SETUP & UTILITY (GLOBAL)
+// 1. SETUP & UTILITY
 // =========================================
-
-const supabaseUrl = 'https://cydgsvqybhhfedoazfok.supabase.co'; 
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN5ZGdzdnF5YmhoZmVkb2F6Zm9rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc4NDc5ODAsImV4cCI6MjA4MzQyMzk4MH0.4p4It2z4qVyLNydXwNdOHx9es7R5zAbB-EevFZVk5Y8'; 
+const supabaseUrl = 'https://cydgsvqybhhfedoazfok.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN5ZGdzdnF5YmhoZmVkb2F6Zm9rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc4NDc5ODAsImV4cCI6MjA4MzQyMzk4MH0.4p4It2z4qVyLNydXwNdOHx9es7R5zAbB-EevFZVk5Y8';
 let supabaseClient;
 try {
     supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
@@ -12,39 +11,103 @@ try {
     supabaseClient = null;
 }
 
-// [PENTING] Variabel Global
 window.simpanTitik = [];
-window.myChart = null; 
+window.myChart = null;
+
+// Fungsi untuk menyimpan jawaban ke Supabase
+async function saveAnswer(question, answer, isCorrect) {
+    if (!supabaseClient) {
+        console.warn('Supabase not initialized, skipping save.');
+        return;
+    }
+    const studentName = document.getElementById('nama-siswa').value || 'Anonymous';
+    const { error } = await supabaseClient.from('student_answers').insert([{
+        student_name: studentName,
+        question: question,
+        answer: answer,
+        is_correct: isCorrect
+    }]);
+    if (error) console.error('Error menyimpan jawaban:', error);
+}
+
+// Set tanggal otomatis
+function initDateTime() {
+    const now = new Date();
+    const tanggalEl = document.getElementById('tanggal');
+    if (tanggalEl) {
+        tanggalEl.textContent = now.toLocaleDateString('id-ID', {
+            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+        });
+    }
+}
+
+// Fungsi untuk menyimpan input ke localStorage
+function saveInputValue(id) {
+    const element = document.getElementById(id);
+    if (element) {
+        localStorage.setItem(id, element.value);
+    }
+}
+
+// Fungsi untuk memuat input dari localStorage
+function loadInputValue(id) {
+    const value = localStorage.getItem(id);
+    const element = document.getElementById(id);
+    if (element && value !== null) {
+        element.value = value;
+    }
+}
+
 
 // =========================================
 // 2. MAIN LOGIC (CHART & REVIEW MODE)
 // =========================================
-
 document.addEventListener('DOMContentLoaded', function() {
-    
-    // --- 1. TAMPILAN KELOMPOK (FIX: TEKS TEBAL) ---
+
+    // --- 1. DAFTAR ID YANG HARUS DISIMPAN OTOMATIS ---
+    const inputIds = [
+        'kelompok-siswa', 'nama-siswa',
+        'coordAx', 'coordAy', 'coordBx', 'coordBy',
+        'jawab_metode1', 'jawab_gradien', 'jawab_metode2',
+        'jawab_kesimpulan',
+        'jawab5', 'jawab6',
+        'devAnswer1', 'devAnswer2',
+        'kesimpulan1', 'kesimpulan2'
+    ];
+
+    // Load semua nilai dari localStorage saat halaman dibuka
+    inputIds.forEach(id => loadInputValue(id));
+
+    // Simpan otomatis setiap kali ada perubahan
+    inputIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener('input', () => saveInputValue(id));
+            el.addEventListener('change', () => saveInputValue(id));
+        }
+    });
+
+    // Inisialisasi tanggal dan waktu
+    initDateTime();
+
+    // --- 2. TAMPILAN KELOMPOK ---
     const elSelect = document.getElementById('kelompok-siswa');
     if (elSelect) {
-        // Hapus dropdown, ganti jadi teks statis
         const textSpan = document.createElement('div');
-        textSpan.innerHTML = `<strong>Kelompok 3</strong>`;
+        textSpan.innerHTML = `<strong>Kelompok 6</strong>`;
         textSpan.style.cssText = "text-align: left; width: 100%; color: #333; padding: 10px 0; font-size: 1rem;";
-        
         const hiddenInput = document.createElement('input');
-        hiddenInput.type = 'hidden'; hiddenInput.id = 'kelompok-siswa'; hiddenInput.value = '3';
-
-        if(elSelect.parentNode) {
+        hiddenInput.type = 'hidden'; hiddenInput.id = 'kelompok-siswa'; hiddenInput.value = '6';
+        if (elSelect.parentNode) {
             elSelect.parentNode.replaceChild(textSpan, elSelect);
             textSpan.parentNode.appendChild(hiddenInput);
         }
     }
 
-    // =========================================
-    // MODE REVIEW (SISWA & GURU)
-    // =========================================
+    // --- 3. CEK MODE REVIEW ---
     const urlParams = new URLSearchParams(window.location.search);
     const isReviewMode = urlParams.get('mode') === 'review';
-    const siswaName = urlParams.get('siswa'); // Nama siswa dari URL (untuk guru)
+    const siswaName = urlParams.get('siswa');
 
     if (isReviewMode) {
         document.body.classList.add('review-mode-active');
@@ -98,7 +161,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.log('[SISWA MODE] Memuat data...');
                 
                 // [PRIORITAS 1] Coba dari localStorage dulu (lebih cepat)
-                const rawData = localStorage.getItem('dataReviewSiswa_Kel3');
+                const rawData = localStorage.getItem('dataReviewSiswa_Kel6');
                 
                 if (rawData) {
                     try {
@@ -107,11 +170,11 @@ document.addEventListener('DOMContentLoaded', function() {
                         
                         // Validasi kelompok
                         const kelompokData = data.find(item => item.question === 'Info Kelompok');
-                        if (kelompokData && kelompokData.answer === '3') {
+                        if (kelompokData && kelompokData.answer === '6') {
                             dataToLoad = data;
-                            console.log('[SISWA MODE] ✅ Data localStorage valid untuk Kelompok 3');
+                            console.log('[SISWA MODE] ✅ Data localStorage valid untuk Kelompok 6');
                         } else {
-                            console.warn('[SISWA MODE] ⚠️ Data localStorage bukan untuk Kelompok 3');
+                            console.warn('[SISWA MODE] ⚠️ Data localStorage bukan untuk Kelompok 6');
                         }
                     } catch(e) { 
                         console.error('[SISWA MODE] Error parsing localStorage:', e); 
@@ -137,11 +200,11 @@ document.addEventListener('DOMContentLoaded', function() {
                             } else if (data && data.length > 0) {
                                 // Validasi kelompok
                                 const kelompokData = data.find(item => item.question === 'Info Kelompok');
-                                if (kelompokData && kelompokData.answer === '3') {
+                                if (kelompokData && kelompokData.answer === '6') {
                                     dataToLoad = data;
                                     console.log('[SISWA MODE] ✅ Data Supabase valid:', data.length, 'items');
                                 } else {
-                                    console.warn('[SISWA MODE] ⚠️ Data Supabase bukan untuk Kelompok 3');
+                                    console.warn('[SISWA MODE] ⚠️ Data Supabase bukan untuk Kelompok 6');
                                 }
                             } else {
                                 console.warn('[SISWA MODE] Tidak ada data di Supabase untuk:', studentNameFromStorage);
@@ -165,14 +228,17 @@ document.addEventListener('DOMContentLoaded', function() {
             // ISI FORMULIR & DISABLE INPUT
             // ===================================================
             if (dataToLoad) {
+                console.log('[MODE REVIEW] Mengisi formulir dengan', dataToLoad.length, 'items');
                 isiFormulirOtomatis(dataToLoad);
                 disableInputs();
                 tampilkanStatusJawaban(dataToLoad);
+            } else {
+                console.warn('[MODE REVIEW] Tidak ada data untuk diisi');
             }
         }, 500);
     }
 
-    // --- 3. INISIALISASI GRAFIK (LISTRIK) ---
+    // --- 4. INISIALISASI GRAFIK ---
     const ctx = document.getElementById('myChart');
     if (ctx && typeof Chart !== 'undefined') {
         const chartCtx = ctx.getContext('2d');
@@ -183,44 +249,35 @@ document.addEventListener('DOMContentLoaded', function() {
             type: 'scatter',
             data: {
                 datasets: [{
-                    label: 'Posisi Tagihan',
-                    data: [], 
-                    backgroundColor: '#9C27B0', // Warna Ungu Khas Kel 3
-                    borderColor: '#7B1FA2',
-                    pointRadius: 8,
-                    pointHoverRadius: 12,
+                    label: 'Volume Air (liter)',
+                    data: [],
+                    backgroundColor: '#0077B6',
+                    borderColor: '#005F8E',
+                    pointRadius: 8, pointHoverRadius: 12,
                     showLine: true, borderWidth: 2, tension: 0
                 }]
             },
             options: {
-                responsive: true,
-                maintainAspectRatio: false,
+                responsive: true, maintainAspectRatio: false,
                 onClick: (e) => {
-                    // Kunci Grafik saat Mode Review
                     if (document.body.classList.contains('review-mode-active')) return;
-
                     const activeChart = window.myChart;
                     if (!activeChart) return;
-
                     const elements = activeChart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, true);
                     if (elements.length > 0) return;
-
                     const canvasPosition = Chart.helpers.getRelativePosition(e, activeChart);
                     const xVal = Math.round(activeChart.scales.x.getValueForPixel(canvasPosition.x));
-                    const yVal = Math.round(activeChart.scales.y.getValueForPixel(canvasPosition.y));
-                    
+                    const yVal = Math.round(activeChart.scales.y.getValueForPixel(canvasPosition.y) / 10) * 10;
                     window.simpanTitik.push({ x: xVal, y: yVal });
-                    
                     const label = String.fromCharCode(65 + activeChart.data.datasets[0].data.length);
                     activeChart.data.datasets[0].data.push({ x: xVal, y: yVal, label: label });
                     activeChart.update();
-                    
                     const feedback = document.getElementById('graphFeedback');
-                    if(feedback) feedback.innerHTML = ''; 
+                    if (feedback) feedback.innerHTML = '';
                 },
                 scales: {
-                    x: { type: 'linear', position: 'bottom', title: { display: true, text: 'Listrik (kWh)', font: {weight:'bold'} }, min: 200, max: 350, ticks: { stepSize: 10 } },
-                    y: { title: { display: true, text: 'Biaya (Ribu Rp)', font: {weight:'bold'} }, min: 250, max: 450, ticks: { stepSize: 10 } }
+                    x: { type: 'linear', position: 'bottom', title: { display: true, text: 'Waktu (menit)', font: { weight: 'bold' } }, min: 0, max: 60, ticks: { stepSize: 3 } },
+                    y: { title: { display: true, text: 'Volume Air (liter)', font: { weight: 'bold' } }, min: 100, max: 500, ticks: { stepSize: 20 } }
                 },
                 plugins: {
                     legend: { display: false },
@@ -235,131 +292,93 @@ document.addEventListener('DOMContentLoaded', function() {
 // =========================================
 // 3. FUNGSI PENGEMBALIAN DATA (RESTORE)
 // =========================================
-
 function isiFormulirOtomatis(data) {
-    // 1. ISI NAMA SISWA
     const dataSiswa = data.find(item => item.student_name && item.student_name !== 'Tanpa Nama');
     if (dataSiswa) {
         const elNama = document.getElementById('nama-siswa');
         if (elNama) {
             elNama.value = dataSiswa.student_name;
-            elNama.setAttribute('value', dataSiswa.student_name);
+            elNama.setAttribute('value', dataSiswa.student_name); // Paksa atribut value
         }
     }
 
     const mapSoal = {
-        'Metode Bu Sintya': 'jawab_metode1', 
-        'Gradien Pak Andi': 'jawab_gradien', 
-        'Metode Pak Andi': 'jawab_metode2', 
-        'Refleksi': 'jawab_kesimpulan', 
-        'Alasan Kesimpulan': 'reasonText', 
+        'Metode Raka': 'jawab_metode1',
+        'Metode Sinta': 'jawab_metode2',
+        'Gradien Raka': 'jawab_gradien',
+        'Refleksi': 'jawab_kesimpulan',
+        'Alasan Kesimpulan': 'reasonText',
         'Persamaan Final': 'finalEquation',
-        'Token 200rb': 'jawab5',
-        'Status Tagihan': 'jawab6',
-        'Besar Tagihan': 'jawab6follow',
-        'Alasan Tidak Tagihan': 'jawab6follow',
-        'Info Kelompok': 'kelompok-siswa', 
-        'Analisis Rumus': 'devAnswer1', 
+        'Volume 30menit': 'jawab5',
+        'Waktu Penuh': 'jawab6',
+        'Info Kelompok': 'kelompok-siswa',
+        'Analisis Rumus': 'devAnswer1',
         'Pendapat Kelompok': 'devAnswer2',
-        'Kesimpulan Konsep': 'kesimpulan1',
-        'Kesimpulan Kontekstual': 'kesimpulan2',
         'Link Presentasi': 'link_presentasi'
     };
 
     data.forEach(item => {
-        // 1. Restore Grafik
-        if (item.question === 'Grafik Chart' || item.question === 'Visualisasi Grafik Kartesius') {
-            try { 
+        if (item.question === 'Visualisasi Grafik Kartesius') {
+            try {
                 const points = JSON.parse(item.answer);
-                window.simpanTitik = points; 
+                window.simpanTitik = points;
                 if (window.myChart) {
                     window.myChart.data.datasets[0].data = points.map((p, index) => ({
                         x: p.x, y: p.y, label: String.fromCharCode(65 + index)
                     }));
                     window.myChart.update();
                 }
-            } catch(e) { console.error("Gagal load grafik:", e); }
+            } catch(e) { console.error("Gagal restore grafik:", e); }
         }
-        
-        // B. Restore Input & Dropdown
+        if (item.question === 'Koordinat A') {
+            const match = item.answer.match(/-?\d+(\.\d+)?/g);
+            if (match) { document.getElementById('coordAx').value = match[0]; document.getElementById('coordAy').value = match[1]; }
+        }
+        if (item.question === 'Koordinat B') {
+            const match = item.answer.match(/-?\d+(\.\d+)?/g);
+            if (match) { document.getElementById('coordBx').value = match[0]; document.getElementById('coordBy').value = match[1]; }
+        }
         let id = mapSoal[item.question];
         if (id) {
             let el = document.getElementById(id);
             if (el) {
                 el.value = item.answer;
-                
-                // Beri warna status benar/salah
                 if (item.is_correct === true) el.style.backgroundColor = '#d4edda';
                 else if (item.is_correct === false) el.style.backgroundColor = '#f8d7da';
-                
-                // OTOMATIS BUKA SECTION TERSEMBUNYI
-                if (item.question === 'Refleksi' && item.answer !== '') {
-                    if (item.answer === 'Ya') document.getElementById('finalEquationSection').classList.remove('hidden');
-                    else if (item.answer === 'Tidak') document.getElementById('reasonSection').classList.remove('hidden');
+                if (item.question === 'Refleksi' && item.answer === 'Ya') {
+                    const s = document.getElementById('finalEquationSection');
+                    if (s) s.classList.remove('hidden');
                 }
-
-                if (item.question === 'Status Tagihan' && item.answer !== '') {
-                    document.getElementById('followup6').classList.remove('hidden');
-                    let label = document.getElementById('label6follow');
-                    let input = document.getElementById('jawab6follow');
-                    let prefix = document.getElementById('prefix6');
-                    
-                    if (item.answer === 'Iya') {
-                        label.innerText = "Berapa besar biaya beban tetap tersebut? (Masukkan angka)";
-                        input.placeholder = "Contoh: 30000";
-                        input.type = "number";
-                        prefix.style.display = "inline";
-                    } else if (item.answer === 'Tidak') {
-                        label.innerText = "Mengapa Pak Andi tidak dikenakan tagihan?";
-                        input.placeholder = "Tuliskan alasanmu di sini...";
-                        input.type = "text";
-                        prefix.style.display = "none";
+                if (item.question === 'Refleksi' && item.answer === 'Tidak') {
+                    const s = document.getElementById('reasonSection');
+                    if (s) s.classList.remove('hidden');
+                }
+                if (item.question === 'Link Presentasi' && item.answer) {
+                    if (!el.parentNode.querySelector('a.btn-buka-link')) {
+                        const btnOpen = document.createElement('a');
+                        btnOpen.href = item.answer; btnOpen.target = "_blank";
+                        btnOpen.className = 'btn-buka-link';
+                        btnOpen.innerHTML = '<i class="fa-solid fa-external-link-alt"></i> Buka Link';
+                        btnOpen.style.cssText = "display:block; margin-top:5px; padding:5px; background:#2196F3; color:white; text-align:center; border-radius:5px; text-decoration:none;";
+                        el.parentNode.appendChild(btnOpen);
                     }
-                }
-                
-                // Restore Besar Tagihan answer (Iya)
-                if (item.question === 'Besar Tagihan' && item.answer !== '') {
-                    document.getElementById('jawab6follow').value = item.answer;
-                    document.getElementById('label6follow').innerText = "Berapa besar biaya beban tetap tersebut? (Masukkan angka)";
-                    document.getElementById('jawab6follow').type = "number";
-                    document.getElementById('jawab6follow').placeholder = "Contoh: 30000";
-                    document.getElementById('prefix6').style.display = "inline";
-                }
-                // Restore Alasan Tidak Dikenakan Tagihan (Tidak)
-                if (item.question === 'Alasan Tidak Tagihan' && item.answer !== '') {
-                    document.getElementById('jawab6follow').value = item.answer;
-                    document.getElementById('label6follow').innerText = "Mengapa Pak Andi tidak dikenakan tagihan?";
-                    document.getElementById('jawab6follow').type = "text";
-                    document.getElementById('jawab6follow').placeholder = "Tuliskan alasanmu di sini...";
-                    document.getElementById('prefix6').style.display = "none";
                 }
             }
         }
-        
-        // 3. Restore Koordinat
-        if (item.question === 'Koordinat A') { const m = item.answer.match(/-?\d+/g); if(m) { document.getElementById('coordAx').value = m[0]; document.getElementById('coordAy').value = m[1]; } }
-        if (item.question === 'Koordinat B') { const m = item.answer.match(/-?\d+/g); if(m) { document.getElementById('coordBx').value = m[0]; document.getElementById('coordBy').value = m[1]; } }
     });
 }
 
-
 function disableInputs() {
     document.querySelectorAll('input, select, textarea, button').forEach(el => {
-        // [FIX] JANGAN MATIKAN KOLOM KOMENTAR
-        if (el.id !== 'btnKembaliClosing' && 
-            el.id !== 'commentName' && 
-            el.id !== 'commentText' && 
-            el.id !== 'btnSaveComment' &&
-            !el.closest('#comment-section') &&
-            !el.classList.contains('swal2-confirm')) {
-            
+        if (el.id !== 'btnKembaliClosing' &&
+            el.id !== 'commentName' && el.id !== 'commentText' && el.id !== 'btnSaveComment' &&
+            !el.closest('#comment-section') && !el.classList.contains('swal2-confirm')) {
             el.disabled = true;
             el.style.borderColor = '#ccc';
         }
     });
     const btnSubmit = document.getElementById('btnFinalSubmit');
-    if(btnSubmit) btnSubmit.style.display = 'none';
-
+    if (btnSubmit) btnSubmit.style.display = 'none';
     if (!document.getElementById('btnKembaliClosing')) {
         const floatingBtn = document.createElement('button');
         floatingBtn.id = 'btnKembaliClosing';
@@ -368,44 +387,37 @@ function disableInputs() {
         floatingBtn.onclick = function() { window.location.href = 'closing.html'; };
         document.body.appendChild(floatingBtn);
     }
-    
     if (window.myChart) {
         window.myChart.options.plugins.tooltip.enabled = false;
         window.myChart.update();
     }
 }
 
-
 // =========================================
-// 4. FITUR KOMENTAR ONLINE (KOMENTAR_KEL_3)
+// 4. FITUR KOMENTAR ONLINE
 // =========================================
-
 function setupOnlineComments() {
     const section = document.createElement('div');
     section.id = 'comment-section';
-    // Warna tema disesuaikan dengan Kelompok 3 (Ungu)
-    section.style.cssText = "width: 90%; max-width: 800px; margin: 30px auto 100px; background: #fff; padding: 25px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-top: 5px solid #9C27B0;";
+    section.style.cssText = "width: 90%; max-width: 800px; margin: 30px auto 100px; background: #fff; padding: 25px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-top: 5px solid #0077B6;";
     section.innerHTML = `
-        <h3 style="margin-top:0; color:#9C27B0;"><i class="fa-solid fa-comments"></i> Tanggapan Teman & Guru</h3>
+        <h3 style="margin-top:0; color:#0077B6;"><i class="fa-solid fa-comments"></i> Tanggapan Teman & Guru</h3>
         <p style="font-size:0.9rem; color:#666;">Feedback ini tersimpan online dan bisa dilihat oleh kelompok presentasi.</p>
-        
         <div id="comments-list" style="max-height:300px; overflow-y:auto; margin-bottom:20px; padding-right:10px; border-bottom:1px solid #eee;">
             <p style="text-align:center; color:#ccc;">Belum ada tanggapan.</p>
         </div>
-
         <div style="background:#f5f5f5; padding:15px; border-radius:10px;">
             <input type="text" id="commentName" placeholder="Nama Kamu / Kelompok" style="width:100%; padding:10px; margin-bottom:10px; border:1px solid #ddd; border-radius:5px;">
             <textarea id="commentText" rows="3" placeholder="Tulis tanggapan..." style="width:100%; padding:10px; border:1px solid #ddd; border-radius:5px; resize:vertical;"></textarea>
-            <button id="btnSaveComment" onclick="sendCommentToSupabase()" style="margin-top:10px; background:#9C27B0; color:white; border:none; padding:10px 20px; border-radius:5px; cursor:pointer; font-weight:bold; width:100%;">
+            <button id="btnSaveComment" onclick="sendCommentToSupabase()" style="margin-top:10px; background:#0077B6; color:white; border:none; padding:10px 20px; border-radius:5px; cursor:pointer; font-weight:bold; width:100%;">
                 <i class="fa-solid fa-paper-plane"></i> Kirim Tanggapan
             </button>
         </div>
     `;
     document.body.appendChild(section);
     document.body.style.paddingBottom = "100px";
-
     loadCommentsFromSupabase();
-    setInterval(loadCommentsFromSupabase, 5000); 
+    setInterval(loadCommentsFromSupabase, 5000);
 }
 
 async function sendCommentToSupabase() {
@@ -419,13 +431,13 @@ async function sendCommentToSupabase() {
         return; 
     }
     
-    // Gunakan tag khusus 'KOMENTAR_KEL_3'
+    // Gunakan tag khusus 'KOMENTAR_KEL_6'
     if (supabaseClient) {
         console.log('[KOMENTAR] Supabase client tersedia, mengirim...');
         
         const { data, error } = await supabaseClient.from('student_answers').insert([{
             student_name: name, 
-            question: 'KOMENTAR_KEL_3', 
+            question: 'KOMENTAR_KEL_6', 
             answer: text, 
             is_correct: false 
         }]).select();
@@ -439,9 +451,9 @@ async function sendCommentToSupabase() {
             // [FITUR HAPUS] Simpan ID komentar ke localStorage
             if (data && data.length > 0) {
                 const commentId = data[0].id;
-                let myComments = JSON.parse(localStorage.getItem('myComments_Kel3') || '[]');
+                let myComments = JSON.parse(localStorage.getItem('myComments_Kel6') || '[]');
                 myComments.push(commentId);
-                localStorage.setItem('myComments_Kel3', JSON.stringify(myComments));
+                localStorage.setItem('myComments_Kel6', JSON.stringify(myComments));
                 console.log('[KOMENTAR] ID tersimpan di localStorage:', commentId);
             }
             
@@ -466,8 +478,8 @@ async function loadCommentsFromSupabase() {
     const { data, error } = await supabaseClient
         .from('student_answers')
         .select('*')
-        .eq('question', 'KOMENTAR_KEL_3')
-        .order('created_at', { ascending: false});
+        .eq('question', 'KOMENTAR_KEL_6')
+        .order('created_at', { ascending: false });
 
     if (error) {
         console.error('[KOMENTAR] Error loading:', error);
@@ -478,13 +490,14 @@ async function loadCommentsFromSupabase() {
 
     if (data) {
         const list = document.getElementById('comments-list');
+        if (!list) return;
         if (data.length === 0) {
             list.innerHTML = '<p style="text-align:center; color:#ccc;">Belum ada tanggapan.</p>';
             return;
         }
 
         // [FITUR HAPUS] Ambil list ID komentar milik user dari localStorage
-        const myComments = JSON.parse(localStorage.getItem('myComments_Kel3') || '[]');
+        const myComments = JSON.parse(localStorage.getItem('myComments_Kel6') || '[]');
 
         let html = '';
         data.forEach(item => {
@@ -500,7 +513,7 @@ async function loadCommentsFromSupabase() {
             
             html += `
                 <div style="background:white; margin-bottom:10px; padding:10px; border-radius:8px; border:1px solid #eee;">
-                    <div style="font-weight:bold; color:#9C27B0; display:flex; justify-content:space-between; align-items:center;">
+                    <div style="font-weight:bold; color:#0077B6; display:flex; justify-content:space-between; align-items:center;">
                         <span><i class="fa-solid fa-user-circle"></i> ${item.student_name}</span>
                         <span style="font-size:0.8rem; color:#999;">${time}${deleteButton}</span>
                     </div>
@@ -522,11 +535,10 @@ async function deleteComment(commentId) {
     console.log('[KOMENTAR] Mencoba hapus komentar ID:', commentId);
 
     if (!supabaseClient) {
-        alert('Error: Koneksi database tidak tersedia.');
+        alert('Koneksi database tidak tersedia!');
         return;
     }
 
-    // Hapus dari Supabase
     const { error } = await supabaseClient
         .from('student_answers')
         .delete()
@@ -534,43 +546,32 @@ async function deleteComment(commentId) {
 
     if (error) {
         console.error('[KOMENTAR] Error hapus:', error);
-        alert('Gagal menghapus komentar: ' + error.message);
+        alert('Gagal menghapus: ' + error.message);
     } else {
-        console.log('[KOMENTAR] Komentar berhasil dihapus');
+        console.log('[KOMENTAR] Komentar berhasil dihapus!');
         
-        // Hapus ID dari localStorage
-        let myComments = JSON.parse(localStorage.getItem('myComments_Kel3') || '[]');
+        // Hapus dari localStorage
+        let myComments = JSON.parse(localStorage.getItem('myComments_Kel6') || '[]');
         myComments = myComments.filter(id => id !== commentId);
-        localStorage.setItem('myComments_Kel3', JSON.stringify(myComments));
+        localStorage.setItem('myComments_Kel6', JSON.stringify(myComments));
         
-        // Reload komentar
         loadCommentsFromSupabase();
-        alert('Komentar berhasil dihapus!');
     }
 }
 
-// =========================================
-// 5. FUNGSI LOGIKA (GLOBAL SCOPE)
-// =========================================
 
-// --- Time & Date ---
-function updateTime() { 
+// =========================================
+// 5. FUNGSI LOGIKA
+// =========================================
+function updateTime() {
     const now = new Date();
-    // Tanggal
     const tanggalEl = document.getElementById('tanggal');
-    if(tanggalEl) {
-        tanggalEl.textContent = now.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-    }
-    // Waktu
+    if (tanggalEl) tanggalEl.textContent = now.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
     const waktuEl = document.getElementById('waktu');
-    if(waktuEl) {
-        waktuEl.textContent = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }); 
-    }
+    if (waktuEl) waktuEl.textContent = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
 }
-updateTime(); 
+updateTime();
 setInterval(updateTime, 1000);
-
-// --- FUNGSI INTERAKSI ---
 
 function toggleHint(id) {
     const hintElement = document.getElementById('hint' + id);
@@ -587,47 +588,41 @@ function toggleHint(id) {
 function undoPoint() {
     if (window.simpanTitik.length > 0) {
         window.simpanTitik.pop();
-        if (window.myChart) {
-            window.myChart.data.datasets[0].data.pop();
-            window.myChart.update();
-        }
-        document.getElementById('graphFeedback').innerHTML = ''; 
+        if (window.myChart) { window.myChart.data.datasets[0].data.pop(); window.myChart.update(); }
+        document.getElementById('graphFeedback').innerHTML = '';
     }
 }
 
 function clearAllPoints() {
     window.simpanTitik = [];
-    if (window.myChart) {
-        window.myChart.data.datasets[0].data = [];
-        window.myChart.update();
-    }
-    document.getElementById('graphFeedback').innerHTML = ''; 
+    if (window.myChart) { window.myChart.data.datasets[0].data = []; window.myChart.update(); }
+    document.getElementById('graphFeedback').innerHTML = '';
 }
 
 function savePresentation() {
-    const linkInput = document.getElementById('link_presentasi').value;
+    const link = document.getElementById('link_presentasi').value.trim();
     const feedback = document.getElementById('feedback_presentasi');
-    if (linkInput.includes('http') || linkInput.includes('www') || linkInput.includes('.com')) {
-        feedback.innerHTML = '<i class="fa-solid fa-check-circle"></i> Link berhasil disimpan!';
+    if (link) {
+        feedback.innerHTML = '<i class="fa-solid fa-check-circle"></i> Link siap dikirim!';
         feedback.className = 'feedback correct';
     } else {
-        feedback.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> Link tidak valid.';
+        feedback.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> Masukkan link terlebih dahulu.';
         feedback.className = 'feedback wrong';
     }
 }
 
-// --- LOGIKA CEK JAWABAN (Group 3: Listrik) ---
+// --- LOGIKA CEK JAWABAN (Kolam Renang: y = 15x) ---
 async function checkAnswer(type) {
     let feedback, message; 
-    let isCorrect = false;
-    
-    // Kunci: m = 1.28, c = 31.28
-    const KUNCI_M = 1.28;
+    let isCorrect = false; // Default status jawaban adalah Salah
+
+    // Kunci: A(10,150), B(30,450) → m=15, c=0 → y = 15x
+    const KUNCI_M = 15;
     const VALID_ANSWERS = [
-        "1.28x+31.28", "y=1.28x+31.28", 
-        "1,28x+31,28", "y=1,28x+31,28"
+        "15x", "15x+0", "y=15x", "y=15x+0"
     ];
 
+    // --- METODE RAKA ---
     if (type === 'metode1') { 
         feedback = document.getElementById('feedback_metode1');
         let rawInput = document.getElementById('jawab_metode1').value.toLowerCase().trim();
@@ -640,36 +635,34 @@ async function checkAnswer(type) {
         let ans = rawInput.replace(/\s/g, '');
         if (VALID_ANSWERS.some(kunci => { const k = kunci.replace("y=",""); return ans === k || ans === "y="+k; })) {
             isCorrect = true;
-            message = '<i class="fa-solid fa-check-circle"></i> <strong>Benar!</strong> Rumus akhirnya adalah <strong>y = 1.28x + 31.28</strong>.';
+            message = '<i class="fa-solid fa-check-circle"></i> <strong>Benar!</strong> Rumus akhirnya adalah <strong>y = 15x</strong> (atau 15x).';
         } else {
             message = '<i class="fa-solid fa-circle-xmark"></i> Kurang tepat. Cek lagi operasi pada persamaannya!';
         }
     } 
+    // --- METODE SINTA ---
     else if (type === 'metode2') { 
         feedback = document.getElementById('feedback_metode2');
         let gradInput = document.getElementById('jawab_gradien').value.trim();
-        
         if (gradInput === '') {
-            message = '<i class="fa-solid fa-circle-exclamation"></i> Hitung gradiennya terlebih dahulu.';
+            message = `<i class="fa-solid fa-circle-exclamation"></i> Hitung gradiennya terlebih dahulu.`;
             feedback.innerHTML = message; feedback.className = 'feedback wrong'; return;
         }
-
         let grad = parseFloat(gradInput.replace(',', '.'));
-        let rawInput = document.getElementById('jawab_metode2').value.toLowerCase();
-        let ans = rawInput.replace(/\s/g, '');
+        let rawInput = document.getElementById('jawab_metode2').value.toLowerCase().replace(/\s/g, '');
 
         if (grad !== KUNCI_M) {
-            message = '<i class="fa-solid fa-circle-exclamation"></i> Gradien salah. Hitung kembali gradiennya.';
+            message = `<i class="fa-solid fa-circle-exclamation"></i> Gradien salah. Hitung kembali gradiennya.`;
             feedback.innerHTML = message; feedback.className = 'feedback wrong'; return;
         }
-
-        if (VALID_ANSWERS.some(kunci => { const k = kunci.replace("y=",""); return ans === k || ans === "y="+k; })) {
+        if (VALID_ANSWERS.some(kunci => { const k = kunci.replace("y=",""); return rawInput === k || rawInput === "y="+k; })) {
             isCorrect = true;
-            message = '<i class="fa-solid fa-check-circle"></i> <strong>Sempurna!</strong> Pak Andi menemukan tarif listrik adalah Rp1.280 per kWh dengan biaya beban tetap Rp31.280.';
+            message = '<i class="fa-solid fa-check-circle"></i> <strong>Sempurna!</strong> Sinta menemukan bahwa volume air bertambah 15 liter setiap menitnya.';
         } else {
             message = '<i class="fa-solid fa-circle-xmark"></i> Gradien benar, tapi persamaan akhirnya salah hitung.';
         }
     }
+    // --- KESIMPULAN ---
     else if (type === 'kesimpulan') {
         feedback = document.getElementById('feedback_kesimpulan');
         let ans = document.getElementById('jawab_kesimpulan').value;
@@ -688,114 +681,58 @@ async function checkAnswer(type) {
             message = 'Pilih jawaban dulu.'; feedback.innerHTML = message; return;
         }
     }
+
+    // --- UJI COBA 1 ---
     else if (type === 5) { 
         feedback = document.getElementById('feedback5');
         let ansRaw = document.getElementById('jawab5').value;
-        
-        // FIX: Hanya ganti koma jadi titik, JANGAN HAPUS TITIK.
-        // Input "131.8" -> "131.8" | Input "131,8" -> "131.8"
-        let cleanAns = ansRaw.replace(',', '.');
-        let ans = parseFloat(cleanAns); 
-        
-        // Target: 200 = 1.28x + 31.28 -> 168.72 = 1.28x -> x = 131.8125
-        // Dibulatkan agar 131.8 dianggap benar
-        if (Math.abs(ans - 131.8) <= 0) {
+        let ans = parseFloat(ansRaw.replace(',', '.')); 
+
+        // Kunci: 900
+        if (Math.abs(ans - 900) <= 0) {
             isCorrect = true;
-            message = '<i class="fa-solid fa-check-circle"></i> <strong>Benar!</strong> Pak Andi akan mendapatkan sekitar <strong>131.8 kWh</strong>.';
+            message = '<i class="fa-solid fa-check-circle"></i> <strong>Benar!</strong> Volume air setelah 60 menit adalah <strong>900 liter</strong>.';
         } else {
-            message = '<i class="fa-solid fa-circle-xmark"></i> Salah. Substitusi nilai y = 200 pada persamaan final (200 ribu rupiah).';
+            message = '<i class="fa-solid fa-circle-xmark"></i> Salah. Substitusi nilai x = 60 pada persamaan final.';
         }
     }
-
-    // --- UJI COBA 2: Dropdown Iya/Tidak (DINAMIS) ---
+    // --- UJI COBA 2 ---
     else if (type === 6) { 
         feedback = document.getElementById('feedback6');
-        let ans = document.getElementById('jawab6').value;
-        let followup = document.getElementById('followup6');
-        
-        // Ambil elemen HTML yang sudah kita beri ID tadi
-        let label = document.getElementById('label6follow');
-        let input = document.getElementById('jawab6follow');
-        let prefix = document.getElementById('prefix6');
-        
-        // Reset dulu
-        input.value = '';
-        document.getElementById('feedback6follow').innerHTML = '';
+        let ansString = document.getElementById('jawab6').value;
+        let ans = parseFloat(ansString.replace(',', '.'));
 
-        if (ans === 'Iya') {
-            followup.classList.remove('hidden');
-            // Ganti teks jadi soal hitungan
-            label.innerText = "Berapa besar biaya beban tetap tersebut? (Masukkan angka)";
-            input.placeholder = "Contoh: 30000";
-            input.type = "number"; 
-            prefix.style.display = "inline"; // Munculkan Rp
-            message = 'Lanjutkan di bawah.';
-            isCorrect = true; 
-        } else if (ans === 'Tidak') {
-            followup.classList.remove('hidden');
-            // Ganti teks jadi soal alasan
-            label.innerText = "Mengapa Pak Andi tidak dikenakan tagihan?";
-            input.placeholder = "Tuliskan alasanmu di sini...";
-            input.type = "text"; 
-            prefix.style.display = "none"; // Sembunyikan Rp
-            message = 'Lanjutkan di bawah.';
-            isCorrect = true; 
+        // Kunci: 133.3
+        if (!isNaN(ans) && Math.abs(ans - 133.3) <= 0) {
+            isCorrect = true;
+            message = '<i class="fa-solid fa-check-circle"></i> <strong>Benar!</strong> Kolam akan penuh (2.000 liter) setelah sekitar <strong>133.3 menit</strong>.';
         } else {
-            message = 'Pilih jawaban dulu.'; feedback.innerHTML = message; return;
-        }
-    }
-    
-    // --- UJI COBA 2: TOMBOL "CEK JAWABAN" ---
-    else if (type === '6.1') {
-        feedback = document.getElementById('feedback6follow');
-        let parentAns = document.getElementById('jawab6').value; // Cek dia pilih Iya/Tidak
-        let ansRaw = document.getElementById('jawab6follow').value.trim();
-        
-        // SKENARIO 1: Siswa Jawab "Iya" (Hitungan Angka)
-        if (parentAns === 'Iya') {
-            let cleanAns = ansRaw.replace(/\./g, '').replace(',', '.');
-            let ans = parseFloat(cleanAns);
-            
-            // Kunci: Rp 31.280
-            if (Math.abs(ans - 31280) <= 0) {
-                isCorrect = true;
-                message = '<i class="fa-solid fa-check-circle"></i> <strong>Benar!</strong> Biaya beban tetap adalah Rp31.280 (Saat x = 0).';
-            } else {
-                message = '<i class="fa-solid fa-circle-xmark"></i> Salah hitung. Substitusi nilai x = 0 pada persamaan finalmu.';
-            }
-        } 
-        // SKENARIO 2: Siswa Jawab "Tidak" (Alasan Konsep)
-        else if (parentAns === 'Tidak') {
-            if (ansRaw.length > 0) {
-                // APAPUN ALASANNYA, KITA SALAHKAN (MISKONSEPSI)
-                isCorrect = false; 
-                message = '<i class="fa-solid fa-lightbulb"></i> <strong>Kurang Tepat.</strong><br>Coba subtitusi nilai x = 0 pada persamaan final kamu. Apakah hasilnya Rp 0?';
-            } else {
-                message = 'Tuliskan alasanmu terlebih dahulu.';
-            }
+            message = '<i class="fa-solid fa-circle-xmark"></i> Salah. Substitusi y = 2000 pada persamaan final.';
         }
     }
 
-    if(type !== 6) {
-        feedback.innerHTML = message;
-        feedback.className = isCorrect ? 'feedback correct' : 'feedback wrong';
-        checkCompletion();
-    }
+    // --- RENDER FINAL ---
+    feedback.innerHTML = message;
+    // Baris ini akan menentukan warna berdasarkan nilai isCorrect di atas
+    feedback.className = isCorrect ? 'feedback correct' : 'feedback wrong';
+
+    // Check if all answers are completed
+    checkCompletion();
 }
 
 async function checkCoordAnswer(point) {
     const feedback = document.getElementById('coordFeedback');
     let correctX, correctY, inputX, inputY;
     if (point === 'A') { 
-        correctX = 224; 
-        correctY = 318; 
-        inputX = parseInt(document.getElementById('coordAx').value); 
-        inputY = parseInt(document.getElementById('coordAy').value); 
+        correctX = 10; 
+        correctY = 150; 
+        inputX = parseFloat(document.getElementById('coordAx').value); 
+        inputY = parseFloat(document.getElementById('coordAy').value); 
     } else if (point === 'B') { 
-        correctX = 299; 
-        correctY = 414; 
-        inputX = parseInt(document.getElementById('coordBx').value); 
-        inputY = parseInt(document.getElementById('coordBy').value); 
+        correctX = 30; 
+        correctY = 450; 
+        inputX = parseFloat(document.getElementById('coordBx').value); 
+        inputY = parseFloat(document.getElementById('coordBy').value); 
     } else return;
 
     if (isNaN(inputX) || isNaN(inputY)) {
@@ -815,14 +752,15 @@ async function checkCoordAnswer(point) {
 }
 
 async function checkGraphPoints() {
+    // Cek pakai variabel global yang lebih aman
     const points = window.simpanTitik;
     const feedback = document.getElementById('graphFeedback');
     
-    // A(224, 318), B(299, 414)
-    const hasA = points.some(p => Math.abs(p.x - 224) <= 1 && Math.abs(p.y - 318) <= 1);
-    const hasB = points.some(p => Math.abs(p.x - 299) <= 1 && Math.abs(p.y - 414) <= 1);
+    // A(10, 150), B(30, 450)
+    const hasA = points.some(p => Math.abs(p.x - 10) <= 1 && Math.abs(p.y - 150) <= 10);
+    const hasB = points.some(p => Math.abs(p.x - 30) <= 1 && Math.abs(p.y - 450) <= 10);
 
- // KONDISI 1: SUDAH MENEMUKAN KEDUA TITIK (PAS)
+    // KONDISI 1: SUDAH MENEMUKAN KEDUA TITIK (PAS)
     if (hasA && hasB) {
         feedback.innerHTML = `
             <i class="fa-solid fa-check-circle"></i> <strong>Luar Biasa!</strong><br>
@@ -837,25 +775,25 @@ async function checkGraphPoints() {
     else if (hasA && !hasB) {
         feedback.innerHTML = `
             <i class="fa-solid fa-circle-exclamation"></i> <strong>Bagus! Titik A sudah pas.</strong><br>
-            Tapi <strong>Titik B</strong> (299, 414) belum ketemu. Cari lagi ya!
+            Tapi <strong>Titik B</strong> (30, 450) belum ketemu. Cari lagi ya!
         `;
         feedback.className = 'feedback wrong'; // Warna Merah (atau kuning jika diatur CSS)
         
         // [VALIDASI BARU] Simpan ke database
     } 
     
-    // KONDISI 2: BARU MENEMUKAN SATU TITIK (B SAJA)
+    // KONDISI 3: BARU MENEMUKAN SATU TITIK (B SAJA)
     else if (!hasA && hasB) {
         feedback.innerHTML = `
             <i class="fa-solid fa-circle-exclamation"></i> <strong>Bagus! Titik B sudah pas.</strong><br>
-            Tapi <strong>Titik A</strong> (224, 318) belum ketemu. Cari lagi ya!
+            Tapi <strong>Titik A</strong> (10, 150) belum ketemu. Cari lagi ya!
         `;
         feedback.className = 'feedback wrong';
         
         // [VALIDASI BARU] Simpan ke database
     } 
     
-    // KONDISI 3: BELUM MENEMUKAN SAMA SEKALI
+    // KONDISI 4: BELUM MENEMUKAN SAMA SEKALI
     else {
         // Cek apakah siswa sudah mencoba membuat titik atau belum
         if (points.length === 0) {
@@ -888,7 +826,7 @@ function submitReason() {
 function checkFinalEquation() {
     const equation = document.getElementById('finalEquation').value.toLowerCase().replace(/\s/g, '').replace(/,/g, '.');
     const feedback = document.getElementById('finalFeedback');
-    if (equation === '1.28x+31.28' || equation === 'y=1.28x+31.28') {
+    if (equation === '15x' || equation === 'y=15x' || equation === '15x+0' || equation === 'y=15x+0') {
         feedback.innerHTML = '<i class="fa-solid fa-check-circle"></i> <strong>Benar!</strong> Persamaan final telah dikonfirmasi.';
         feedback.className = 'feedback correct';
     } else {
@@ -908,16 +846,16 @@ function checkDevAnswer(num) {
             feedback.innerHTML = '<i class="fa-solid fa-check-circle"></i> <strong>Benar!</strong> Itu adalah rumus <strong>Gradien (m)</strong>.';
             feedback.className = 'feedback correct';
         } else {
-            feedback.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> Kurang tepat. Rumus itu menghitung perubahan y terhadap perubahan x.';
+            feedback.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> Kurang tepat. Coba ingat kembali, rumus (y2-y1)/(x2-x1) itu rumus apa?';
             feedback.className = 'feedback wrong';
         }
     } else if (num === 2) {
         const ans = document.getElementById('devAnswer2').value.trim();
-        if (ans.length > 10) {
-            feedback.innerHTML = '<i class="fa-solid fa-check-circle"></i> Pendapat kelompokmu telah tersimpan. Terima kasih!';
+        if (ans.length > 15) {
+            feedback.innerHTML = '<i class="fa-solid fa-check-circle"></i> <strong>Pendapat Diterima!</strong> Analisis yang bagus.';
             feedback.className = 'feedback correct';
         } else {
-            feedback.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i> Terlalu pendek. Jelaskan lebih lengkap (minimal 10 karakter).';
+            feedback.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i> Jawaban terlalu singkat.';
             feedback.className = 'feedback wrong';
         }
     }
@@ -925,9 +863,9 @@ function checkDevAnswer(num) {
 }
 
 function checkCompletion() {
-    const ids = ['coordAx', 'jawab_metode1', 'jawab_gradien', 'jawab_metode2', 'jawab_kesimpulan', 'jawab5', 'devAnswer1', 'devAnswer2'];
+    const ids = ['coordAx', 'jawab_metode1', 'jawab_gradien', 'jawab_metode2', 'jawab_kesimpulan', 'jawab5', 'jawab6', 'devAnswer1', 'devAnswer2'];
     const allFilled = ids.every(id => { const el = document.getElementById(id); return el && el.value.trim() !== ''; });
-    
+    // Cek juga chart
     if (allFilled && window.simpanTitik.length >= 2 && !localStorage.getItem('submitted')) {
         document.getElementById('confirmationModal').style.display = 'flex';
     }
@@ -937,13 +875,25 @@ function closeConfirmationModal() {
     document.getElementById('confirmationModal').style.display = 'none';
 }
 
+function saveLink() {
+    const linkInput = document.getElementById('link_presentasi').value;
+    const feedback = document.getElementById('feedback_presentasi');
+    if (linkInput.includes('http') || linkInput.includes('www') || linkInput.includes('.com')) {
+        feedback.innerHTML = '<i class="fa-solid fa-check-circle"></i> Link berhasil disimpan!';
+        feedback.className = 'feedback correct';
+    } else {
+        feedback.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> Link tidak valid.';
+        feedback.className = 'feedback wrong';
+    }
+}
+
 function validateAndOpenModal() {
     let ids = [
         'nama-siswa', 'kelompok-siswa',
         'coordAx', 'coordAy', 'coordBx', 'coordBy',
         'jawab_metode1', 'jawab_gradien', 'jawab_metode2',
         'jawab_kesimpulan',
-        'jawab5', 'jawab6', 'jawab6follow',
+        'jawab5', 'jawab6',
         'devAnswer1', 'devAnswer2',
         'kesimpulan1', 'kesimpulan2'
     ];
@@ -981,9 +931,6 @@ function validateAndOpenModal() {
     }
 }
 
-// =========================================
-// 6. SUBMIT (SAFE MODE)
-// =========================================
 async function confirmSubmission() {
     const btn = document.querySelector('#confirmationModal .btn-check');
     if(btn) { btn.innerText = "Menyimpan..."; btn.disabled = true; }
@@ -991,45 +938,37 @@ async function confirmSubmission() {
     const sName = document.getElementById('nama-siswa').value || 'Tanpa Nama';
     let dataToSave = [];
 
-    const isEq = (v) => { if(!v) return false; const c = v.toLowerCase().replace(/\s/g,'').replace(/,/g, '.'); return c === '1.28x+31.28' || c === 'y=1.28x+31.28' || c === '1.28x+31.28' || c === 'y=1.28x+31.28'; };
+    const isEq = (v) => { if(!v) return false; const c = v.toLowerCase().replace(/\s/g,'').replace(/,/g, '.'); return c === '15x' || c === 'y=15x' || c === '15x+0' || c === 'y=15x+0'; };
     const pushData = (q, ans, corr) => dataToSave.push({ student_name: sName, question: q, answer: ans, is_correct: corr });
 
-    // === VALIDASI SOAL UTAMA (SUDAH ADA) ===
-    pushData('Metode Bu Sintya', document.getElementById('jawab_metode1').value, isEq(document.getElementById('jawab_metode1').value));
-    pushData('Metode Pak Andi', document.getElementById('jawab_metode2').value, isEq(document.getElementById('jawab_metode2').value));
+    // === VALIDASI SOAL UTAMA ===
+    pushData('Metode Raka', document.getElementById('jawab_metode1').value, isEq(document.getElementById('jawab_metode1').value));
+    pushData('Metode Sinta', document.getElementById('jawab_metode2').value, isEq(document.getElementById('jawab_metode2').value));
     
-    // Token dan Tagihan
     let v5 = parseFloat(document.getElementById('jawab5').value.replace(',','.'));
-    pushData('Token 200rb', document.getElementById('jawab5').value, Math.abs(v5 - 131.8) <= 0);
-    
-    const statusTagihan = document.getElementById('jawab6').value;
-    const jawab6followVal = document.getElementById('jawab6follow').value;
-    if (statusTagihan === 'Iya') {
-        let v6 = parseFloat(jawab6followVal.replace(',','.'));
-        pushData('Besar Tagihan', jawab6followVal, Math.abs(v6 - 31280) <= 100);
-    } else if (statusTagihan === 'Tidak') {
-        pushData('Alasan Tidak Tagihan', jawab6followVal, false);
-    }
+    pushData('Volume 30menit', document.getElementById('jawab5').value, Math.abs(v5 - 450) <= 0);
+    let v6 = parseFloat(document.getElementById('jawab6').value.replace(',','.'));
+    pushData('Waktu Penuh', document.getElementById('jawab6').value, Math.abs(v6 - 133) <= 0);
 
     // === VALIDASI BARU: 8 PERTANYAAN TAMBAHAN ===
     
     // 1 & 2. Koordinat Titik A dan B
-    const coordAx = parseInt(document.getElementById('coordAx').value);
-    const coordAy = parseInt(document.getElementById('coordAy').value);
-    const coordBx = parseInt(document.getElementById('coordBx').value);
-    const coordBy = parseInt(document.getElementById('coordBy').value);
+    const coordAx = parseFloat(document.getElementById('coordAx').value);
+    const coordAy = parseFloat(document.getElementById('coordAy').value);
+    const coordBx = parseFloat(document.getElementById('coordBx').value);
+    const coordBy = parseFloat(document.getElementById('coordBy').value);
     
-    pushData('Koordinat A', `(${coordAx}, ${coordAy})`, coordAx === 224 && coordAy === 318);
-    pushData('Koordinat B', `(${coordBx}, ${coordBy})`, coordBx === 299 && coordBy === 414);
+    pushData('Koordinat A', `(${coordAx}, ${coordAy})`, coordAx === 10 && coordAy === 150);
+    pushData('Koordinat B', `(${coordBx}, ${coordBy})`, coordBx === 30 && coordBy === 450);
     
     // 3. Gradien (Metode 2)
     let gVal = parseFloat(document.getElementById('jawab_gradien').value.replace(',','.'));
-    pushData('Gradien Pak Andi', document.getElementById('jawab_gradien').value, Math.abs(gVal - 1.28) < 0.01);
+    pushData('Gradien Raka', document.getElementById('jawab_gradien').value, Math.abs(gVal - (15)) < 0.1);
     
     // 4. Visualisasi Grafik Kartesius
     const points = window.simpanTitik || [];
-    const hasA = points.some(p => Math.abs(p.x - 224) <= 1 && Math.abs(p.y - 318) <= 1);
-    const hasB = points.some(p => Math.abs(p.x - 299) <= 1 && Math.abs(p.y - 414) <= 1);
+    const hasA = points.some(p => Math.abs(p.x - 10) <= 1 && Math.abs(p.y - 150) <= 3);
+    const hasB = points.some(p => Math.abs(p.x - 30) <= 1 && Math.abs(p.y - 450) <= 9);
     pushData('Visualisasi Grafik Kartesius', JSON.stringify(window.simpanTitik), hasA && hasB);
     
     // 5. Refleksi (Ya atau Tidak)
@@ -1046,63 +985,53 @@ async function confirmSubmission() {
     
     // 7. Analisis Rumus (m, gradien, gradient, kemiringan = benar)
     const analisisRumus = document.getElementById('devAnswer1').value;
-    pushData('Analisis Rumus', analisisRumus, 
+    pushData('Analisis Rumus', analisisRumus,
     ['gradien','kemiringan','m','gradient'].some(k => analisisRumus.toLowerCase().trim().includes(k)));
     
-    // 8. Kapan Menggunakan Metode (>15 karakter = benar)
+    // 8. Pendapat Kelompok (>15 karakter = benar)
     const kapanMetode = document.getElementById('devAnswer2').value;
     pushData('Pendapat Kelompok', kapanMetode, kapanMetode.length > 15);
 
-    // 9. [FIX] SIMPAN DROPDOWN STATUS TAGIHAN
-    pushData('Status Tagihan', document.getElementById('jawab6').value, document.getElementById('jawab6').value === 'Iya');
+    // === DATA INFO (TIDAK DIVALIDASI) ===
     pushData('Kesimpulan Konsep', document.getElementById('kesimpulan1').value, document.getElementById('kesimpulan1').value.trim().length >= 20);
     pushData('Kesimpulan Kontekstual', document.getElementById('kesimpulan2').value, document.getElementById('kesimpulan2').value.trim().length >= 20);
-    pushData('Info Kelompok', '3', false);
+    pushData('Info Kelompok', '6', false);
 
-    // === DATA INFO (TIDAK DIVALIDASI) ===
-
+    // [FIX LINK] Pastikan diambil saat submit
     const linkPres = document.getElementById('link_presentasi');
     if (linkPres && linkPres.value) pushData('Link Presentasi', linkPres.value, false);
 
-    // [CRITICAL FIX] Bersihkan data lama dengan key generik sebelum menyimpan
+    // 1. SIMPAN LOKAL DULU (PENTING! Agar Review Mode jalan 100%)
     localStorage.removeItem('dataReviewSiswa');
     
     // Simpan nama siswa ke localStorage untuk review mode
     localStorage.setItem('nama-siswa', sName);
     
     // Simpan kelompok siswa ke localStorage untuk redirect ke halaman yang benar
-    const kelompokSiswa = document.getElementById('kelompok-siswa').value || '3';
+    const kelompokSiswa = document.getElementById('kelompok-siswa').value || '6';
     localStorage.setItem('kelompok-siswa', kelompokSiswa);
     
-    // Simpan dengan key yang benar untuk Kelompok 3
-    localStorage.setItem('dataReviewSiswa_Kel3', JSON.stringify(dataToSave));
+    localStorage.setItem('dataReviewSiswa_Kel6', JSON.stringify(dataToSave));
     localStorage.setItem('submitted', 'true'); 
-    
-    console.log('Data disimpan untuk Kelompok 3:', dataToSave.length, 'items');
 
-    if (supabaseClient) {
-        const { error: insertError } = await supabaseClient.from('student_answers').insert(dataToSave);
-        if (insertError) {
-            alert('Gagal menyimpan jawaban ke database: ' + insertError.message + '\nSilakan hubungi guru.');
-            if(btn) { btn.innerText = 'Simpan & Selesai'; btn.disabled = false; }
-            return;
+    // 2. KIRIM DATABASE (Try-Catch agar kalau internet mati, lokal tetap aman)
+    try {
+        if (supabaseClient) {
+            const { error: insertError } = await supabaseClient.from('student_answers').insert(dataToSave);
+            if (insertError) {
+                alert('Gagal menyimpan jawaban ke database: ' + insertError.message + '\nSilakan hubungi guru.');
+                if(btn) { btn.innerText = 'Simpan & Selesai'; btn.disabled = false; }
+                return;
+            }
         }
+    } catch (e) {
+        console.log("Database error/offline, tapi data lokal aman:", e);
     }
 
+    // 3. PINDAH HALAMAN
     window.location.href = 'closing.html';
 }
 
-// Helper Function: Kirim Jawaban
-async function saveAnswer(question, answer, isCorrect) {
-    if (!supabaseClient) return;
-    const studentName = document.getElementById('nama-siswa').value || 'Anonymous';
-    await supabaseClient.from('student_answers').insert([{
-        student_name: studentName,
-        question: question,
-        answer: answer,
-        is_correct: isCorrect
-    }]);
-}
 
 
 // =========================================
@@ -1147,6 +1076,7 @@ window.addEventListener('load', async function() {
                 const { data, error } = await supabaseClient.from('student_answers').select('*').eq('student_name', namaSiswa);
                 if (!error && data && data.length > 0) {
                     isiFormulirOtomatis(data);
+                    tampilkanStatusJawaban(data);
                 } else {
                     // Show error message if data not found
                     console.warn('Data tidak ditemukan untuk siswa:', namaSiswa);
@@ -1157,74 +1087,59 @@ window.addEventListener('load', async function() {
                 banner.innerHTML += `<br><small style="color: #ffcccc;">Catatan: Gagal memuat data dari database.</small>`;
             }
         }
+        
+        document.querySelectorAll('input, select, textarea').forEach(el => el.disabled = true);
+        document.getElementById('nama-siswa').value = namaSiswa;
     }
 });
 
 // =========================================
 // FITUR TAMPILAN BENAR/SALAH MODE REVIEW
 // =========================================
-
 function tampilkanStatusJawaban(data) {
     const urlParams = new URLSearchParams(window.location.search);
     const isReviewMode = urlParams.get('mode') === 'review';
     const isGuruMode = urlParams.get('siswa');
     if (!isReviewMode && !isGuruMode) return;
 
-    const soalDiabaikan = ['Info Kelompok', 'nama-siswa', 'Link Presentasi', 'KOMENTAR_KEL_1', 'KOMENTAR_KEL_2', 'KOMENTAR_KEL_3', 'KOMENTAR_KEL_4', 'KOMENTAR_KEL_5'];
+    const soalDiabaikan = ['Info Kelompok', 'nama-siswa', 'Link Presentasi', 'KOMENTAR_KEL_1', 'KOMENTAR_KEL_2', 'KOMENTAR_KEL_3', 'KOMENTAR_KEL_4', 'KOMENTAR_KEL_5', 'KOMENTAR_KEL_6', 'KOMENTAR_KEL_7', 'KOMENTAR_KEL_8'];
     const soalData = data.filter(item =>
         !soalDiabaikan.includes(item.question) &&
         item.is_correct !== null &&
         item.is_correct !== undefined
     );
-
     const totalSoal = soalData.length;
     const totalBenar = soalData.filter(item => item.is_correct === true).length;
 
-    // --- Ikon ✅/❌ di setiap input field ---
     if (isGuruMode) {
     setTimeout(() => {
         document.querySelectorAll('input, select, textarea').forEach(el => {
             if (el.disabled && el.style.backgroundColor &&
-                (el.style.backgroundColor === 'rgb(212, 237, 218)' ||
-                 el.style.backgroundColor === 'rgb(248, 215, 218)')) {
-
+                (el.style.backgroundColor === 'rgb(212, 237, 218)' || el.style.backgroundColor === 'rgb(248, 215, 218)')) {
                 if (el.parentElement.querySelector('.review-status-icon')) return;
                 if (el.type === 'hidden') return;
-
                 const isBenar = el.style.backgroundColor === 'rgb(212, 237, 218)';
                 const icon = document.createElement('span');
                 icon.className = 'review-status-icon ' + (isBenar ? 'benar' : 'salah');
-                icon.innerHTML = isBenar
-                    ? '<i class="fa-solid fa-circle-check"></i>'
-                    : '<i class="fa-solid fa-circle-xmark"></i>';
+                icon.innerHTML = isBenar ? '<i class="fa-solid fa-circle-check"></i>' : '<i class="fa-solid fa-circle-xmark"></i>';
                 el.insertAdjacentElement('afterend', icon);
             }
         });
-
-        // Ikon grafik kartesius
-        const grafik = data.find(item =>
-            item.question === 'Visualisasi Grafik Kartesius' || item.question === 'Grafik Chart'
-        );
+        const grafik = data.find(item => item.question === 'Visualisasi Grafik Kartesius');
         if (grafik) {
             const grafikFeedback = document.getElementById('graphFeedback');
             if (grafikFeedback && !grafikFeedback.querySelector('.review-status-icon')) {
-                grafikFeedback.innerHTML = grafik.is_correct
-                    ? '<i class="fa-solid fa-circle-check"></i> <strong>Grafik Benar!</strong> Titik A dan B terpasang dengan tepat.'
-                    : '<i class="fa-solid fa-circle-xmark"></i> <strong>Grafik Belum Tepat.</strong> Titik yang diplot belum sesuai.';
+                grafikFeedback.innerHTML = grafik.is_correct ? '<i class="fa-solid fa-circle-check"></i> <strong>Grafik Benar!</strong> Titik A dan B terpasang dengan tepat.' : '<i class="fa-solid fa-circle-xmark"></i> <strong>Grafik Belum Tepat.</strong> Titik yang diplot belum sesuai.';
                 grafikFeedback.className = grafik.is_correct ? 'feedback correct' : 'feedback wrong';
             }
         }
-
-        // Ikon koordinat A & B
-        const koordinatA = data.find(item => item.question === 'Koordinat A' || item.question === 'Koordinat Titik A');
-        const koordinatB = data.find(item => item.question === 'Koordinat B' || item.question === 'Koordinat Titik B');
+        const koordinatA = data.find(item => item.question === 'Koordinat A');
+        const koordinatB = data.find(item => item.question === 'Koordinat B');
         const coordFeedback = document.getElementById('coordFeedback');
         if (coordFeedback && (koordinatA || koordinatB)) {
             const aBenar = koordinatA ? koordinatA.is_correct : false;
             const bBenar = koordinatB ? koordinatB.is_correct : false;
-            const ikonA = aBenar ? '✅' : '❌';
-            const ikonB = bBenar ? '✅' : '❌';
-            coordFeedback.innerHTML = `${ikonA} Titik A: <strong>${aBenar ? 'Benar' : 'Salah'}</strong> &nbsp;|&nbsp; ${ikonB} Titik B: <strong>${bBenar ? 'Benar' : 'Salah'}</strong>`;
+            coordFeedback.innerHTML = `${aBenar ? '✅' : '❌'} Titik A: <strong>${aBenar ? 'Benar' : 'Salah'}</strong> &nbsp;|&nbsp; ${bBenar ? '✅' : '❌'} Titik B: <strong>${bBenar ? 'Benar' : 'Salah'}</strong>`;
             coordFeedback.className = (aBenar && bBenar) ? 'feedback correct' : 'feedback wrong';
         }
     }, 300);

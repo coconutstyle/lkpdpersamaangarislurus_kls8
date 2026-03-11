@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LKPD: Lilin yang Menyusut</title>
+    <title>LKPD: Penggunaan Tinta Pulpen</title>
 
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&family=Fredoka:wght@500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
-    <link rel="stylesheet" href="lkpd.css"> 
+    <link rel="stylesheet" href="lkpd.css">
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -18,20 +18,18 @@
 <body>
 
     <div class="container">
-        <header class="main-header" style="background: linear-gradient(135deg, #E65100 0%, #FF9800 100%);">
+        <header class="main-header" style="background: linear-gradient(135deg, #6A0572 0%, #AB47BC 100%);">
             <div class="logo-area">
-                <i class="fa-solid fa-fire-flame-curved fa-3x" style="color: #FFC107;"></i>
+                <i class="fa-solid fa-pen-nib fa-3x" style="color: white;"></i>
                 <div style="margin-left: 15px; display: flex; flex-direction: column; justify-content: center;">
                     <h1 style="margin: 0; line-height: 1.1; font-size: 1.8rem;">LKPD: Persamaan Garis Lurus</h1>
-                    <p style="margin: 2px 0 0 0; color: white; font-size: 0.95rem; opacity: 0.9;">Kasus: Melelehnya Lilin</p>
+                    <p style="margin: 2px 0 0 0; color: white; font-size: 0.95rem; opacity: 0.9;">Kasus: Penggunaan Tinta Pulpen</p>
                 </div>
             </div>
-            
-             <div class="student-info">
+            <div class="student-info">
                 <div class="input-group" style="margin-bottom: 8px;">
                     <i class="fa-solid fa-users"></i>
-                    <select id="kelompok-siswa">
-                    </select>
+                    <select id="kelompok-siswa"></select>
                 </div>
                 <div class="input-group">
                     <i class="fa-solid fa-user"></i>
@@ -53,30 +51,27 @@
 
         <section class="pbl-phase" id="phase-1">
             <div class="phase-badge">Fase 1: Orientasi Masalah</div>
-            <h2><i class="fa-solid fa-lightbulb"></i> Penggunaan Lilin Saat Mati Lampu</h2>
-            
+            <h2><i class="fa-solid fa-pen-nib"></i> Tinta Pulpen yang Semakin Menipis</h2>
             <div class="scenario-box">
-                <p>Saat mati lampu, Ani menyalakan sebuah lilin batang. Ani iseng mengukur tinggi lilin tersebut seiring berjalannya waktu.</p>
+                <p>Dara baru membeli pulpen untuk belajar. Setiap hari ia menggunakannya untuk menulis catatan. Ia penasaran dan mencatat persentase sisa tinta pulpennya pada dua hari berbeda.</p>
                 <ul style="list-style: none; padding: 0;">
-                    <li><i class="fa-regular fa-clock"></i> <strong>Menit ke-10 (Titik A):</strong> Tinggi lilin tinggal <strong>17 cm</strong>.</li>
-                    <li><i class="fa-regular fa-clock"></i> <strong>Menit ke-20 (Titik B):</strong> Tinggi lilin tinggal <strong>15 cm</strong>.</li>
+                    <li><i class="fa-regular fa-calendar-days"></i> <strong>Hari ke-2 :</strong> Sisa tinta <strong>96%</strong>.</li>
+                    <li><i class="fa-regular fa-calendar-days"></i> <strong>Hari ke-6 :</strong> Sisa tinta <strong>80%</strong>.</li>
                 </ul>
-                <p><strong>Diketahui informasi Grafik antara waktu dengan tinggi lilin:</strong></p>
+                <p><strong>Diketahui informasi Grafik pemakaian tinta:</strong></p>
                 <ul style="margin: 5px 0 0 20px;">
-                    <li><strong>Sumbu Y (Vertikal):</strong> Tinggi Lilin (cm)</li>
-                    <li><strong>Sumbu X (Horizontal):</strong> Waktu (menit)</li>
+                    <li><strong>Sumbu X (Horizontal):</strong> Hari ke- (penggunaan)</li>
+                    <li><strong>Sumbu Y (Vertikal):</strong> Sisa tinta (%)</li>
                 </ul>
-                
                 <div class="problem-statement">
                     <strong>Perdebatan:</strong><br>
                     <ul>
-                        <li><strong>Ani:</strong> "Kita hitung dulu tingkat melelehnya lilin (Gradien)!"</li>
-                        <li><strong>Danang:</strong> "Kelamaan Kak! Langsung masukkan data menit ke-10 dan ke-20 ke dalam titik!"</li>
+                        <li><strong>Wahyu:</strong> "Kita hitung dulu berapa persen tinta yang berkurang per hari (Gradien)!"</li>
+                        <li><strong>Lila:</strong> "Tidak efisien! Langsung pakai rumus dua titik dengan data hari ke-2 dan ke-6!"</li>
                     </ul>
-                    <strong>Tantangan:</strong> Buktikan apakah kedua cara tersebut menghasilkan rumus prediksi pelelehan lilin yang sama!
+                    <strong>Tantangan:</strong> Buktikan apakah kedua cara tersebut menghasilkan persamaan prediksi sisa tinta yang sama!
                 </div>
-
-               <div class="coordinate-check">
+                <div class="coordinate-check">
                     <p><strong>Cek Koordinat:</strong> Masukkan koordinat titik A dan B.</p>
                     <div class="coord-input-group">
                         <label>Titik A:</label>
@@ -97,22 +92,19 @@
 
         <section class="pbl-phase chart-section">
             <h2><i class="fa-solid fa-chart-line"></i> Visualisasi Grafik Kartesius</h2>
-            
-            <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; border-left: 5px solid #2196F3; margin-bottom: 15px;">
+            <div style="background: #f3e5f5; padding: 15px; border-radius: 8px; border-left: 5px solid #AB47BC; margin-bottom: 15px;">
                 <strong>Instruksi:</strong>
                 <ul style="margin: 5px 0 0 20px;">
-                    <li>Klik area grafik di bawah untuk membuat <strong>Titik A </strong> dan <strong>Titik B</strong>.</li>
-                    <li>Gunakan <strong>Scroll Bar</strong> jika angka belum terlihat.</li>
+                    <li>Klik area grafik di bawah untuk membuat <strong>Titik A </strong> dan <strong>Titik B </strong>.</li>
+                    <li>Gunakan <strong>Scroll Bar</strong> (di samping dan bawah grafik) untuk mencari posisi angka yang pas.</li>
                 </ul>
             </div>
-
             <div class="chart-container">
                 <div class="chart-controls">
                     <button id="undoBtn" class="btn-control" onclick="undoPoint()">Undo</button>
                     <button id="clearBtn" class="btn-control" onclick="clearAllPoints()">Hapus Semua</button>
                     <button id="checkGraphBtn" class="btn-control" onclick="checkGraphPoints()">Cek Grafik</button>
                 </div>
-
                 <div class="chart-scroll-wrapper">
                     <div class="chart-large-area">
                         <canvas id="myChart"></canvas>
@@ -125,16 +117,14 @@
         <section class="pbl-phase" id="phase-3">
             <div class="phase-badge">Fase 2: Penyelidikan</div>
             <h2><i class="fa-solid fa-calculator"></i> Duel Metode</h2>
-            
             <p>Mari kita hitung persamaannya.</p>
-
             <div class="formula-container">
                 <div class="question-card scenario-card">
                     <div class="q-header">
-                        <h3><i class="fa-solid fa-1"></i> Metode Danang (2 Titik)</h3>
+                        <h3><i class="fa-solid fa-1"></i> Metode Lila (2 Titik)</h3>
                         <button class="btn-hint" onclick="toggleHint('2points')"><i class="fa-regular fa-lightbulb"></i> Bantuan</button>
                     </div>
-                    <p class="q-text">Gunakan rumus dua titik untuk persamaan garis:</p>
+                                        <p class="q-text">Gunakan rumus dua titik untuk persamaan garis:</p>
                     <div class="math-step" style="font-size: 0.9rem;">
                         $$ \frac{y - y_1}{y_2 - y_1} = \frac{x - x_1}{x_2 - x_1} $$
                         <br>di mana \((x_1, y_1)\) adalah titik A dan \((x_2, y_2)\) adalah titik B.
@@ -145,39 +135,35 @@
                     </div>
 
                     <div id="hint2points" class="hint-box hidden">
-                        <strong>Petunjuk:</strong> <br>
+                        <strong>Petunjuk:</strong><br>
                         1. Substitusi nilai \(x_1\), \(x_2\), \(y_1\), dan \(y_2\).<br>
                         2. Sederhanakan persamaan tersebut menjadi bentuk \(y = mx + c\).<br>
                         3. Hati-hati, nilai \(y_2 - y_1\) akan negatif. Jangan lupa tanda minusnya! <br>
                     </div>
-
                     <div class="answer-area">
                         <span>y = </span>
-                        <input type="text" id="jawab_metode1" placeholder="cth: -0.5x + 50">
-                        <button class="btn-check" onclick="checkAnswer('metode1')">Cek Danang</button>
+                        <input type="text" id="jawab_metode1" placeholder="cth: -5x + 90">
+                        <button class="btn-check" onclick="checkAnswer('metode1')">Cek Lila</button>
                     </div>
                     <div id="feedback_metode1" class="feedback"></div>
                 </div>
 
                 <div class="question-card scenario-card">
                     <div class="q-header">
-                        <h3><i class="fa-solid fa-2"></i> Metode Ani (Gradien)</h3>
+                        <h3><i class="fa-solid fa-2"></i> Metode Wahyu (Gradien)</h3>
                         <button class="btn-hint" onclick="toggleHint('gradpoint')"><i class="fa-regular fa-lightbulb"></i> Bantuan</button>
                     </div>
-                    <p class="q-text">Langkah 1: Hitung kecepatan penyusutan (Gradien / m).</p>
-                    
+                    <p class="q-text">Langkah 1: Hitung penurunan tinta per hari (Gradien / m).</p>
                     <div class="sub-step">
                         <span>m = </span>
                         <input type="number" id="jawab_gradien" style="width: 100px;" placeholder="...">
                     </div>
-
                     <p class="q-text" style="margin-top:15px;">Langkah 2: Masukkan m dan titik A ke rumus:</p>
                     <div class="math-step" style="font-size: 0.9rem;">
                         $$ y - y_1 = m(x - x_1) $$
                     </div>
-
-                   <div id="hintgradpoint" class="hint-box hidden">
-                       <strong>Petunjuk:</strong> <br>
+                    <div id="hintgradpoint" class="hint-box hidden">
+                        <strong>Petunjuk:</strong><br>
                         1. Hitung gradien (m) menggunakan rumus:
                         <div class="math-step" style="font-size: 0.8rem; margin: 5px 0;">
                             $$ m = \frac{y_2 - y_1}{x_2 - x_1} $$
@@ -191,12 +177,10 @@
                             $$ y = mx + c $$
                         </div>
                     </div>
-
-
                     <div class="answer-area">
                         <span>y = </span>
-                        <input type="text" id="jawab_metode2" placeholder="cth: -0.5x + 50">
-                        <button class="btn-check" onclick="checkAnswer('metode2')">Cek Ani</button>
+                        <input type="text" id="jawab_metode2" placeholder="cth: -5x + 90">
+                        <button class="btn-check" onclick="checkAnswer('metode2')">Cek Wahyu</button>
                     </div>
                     <div id="feedback_metode2" class="feedback"></div>
                 </div>
@@ -213,19 +197,17 @@
                     <button class="btn-check" onclick="checkAnswer('kesimpulan')">Kunci Jawaban</button>
                 </div>
                 <div id="feedback_kesimpulan" class="feedback"></div>
-                
                 <div id="reasonSection" class="hidden">
-                    <p><strong>Berikan alasan mengapa hasilnya berbeda (jika ada):</strong></p>
+                    <p><strong>Berikan alasan mengapa hasilnya berbeda:</strong></p>
                     <textarea id="reasonText" rows="4" placeholder="Jelaskan..."></textarea>
                     <button class="btn-check" onclick="submitReason()">Kirim Alasan</button>
                     <div id="reasonFeedback" class="feedback"></div>
                 </div>
-
                 <div id="finalEquationSection" class="hidden">
-                    <p><strong>Tuliskan Persamaan Garis Lurus final untuk tinggi lilin:</strong></p>
+                    <p><strong>Tuliskan Persamaan Garis Lurus final untuk sisa tinta pulpen:</strong></p>
                     <div class="answer-area">
                         <span>y = </span>
-                        <input type="text" id="finalEquation" placeholder="cth: -0.5x + 50">
+                        <input type="text" id="finalEquation" placeholder="cth: -5x + 90">
                         <button class="btn-check" onclick="checkFinalEquation()">Cek Persamaan</button>
                     </div>
                     <div id="finalFeedback" class="feedback"></div>
@@ -236,10 +218,9 @@
         <section class="pbl-phase" id="phase-development">
             <div class="phase-badge">Fase 3: Pengembangan</div>
             <h2><i class="fa-solid fa-comments"></i> Diskusi & Analisis</h2>
-            
-             <div class="question-card">
+            <div class="question-card">
                 <h3>1. Analisis Rumus</h3>
-                <p>Perhatikan kembali Metode 1 pada Pendapat Danang:</p>
+                <p>Perhatikan kembali Metode 1 pada Pendapat Lila:</p>
                 <div class="math-step">
                     $$ \frac{y - y_1}{y_2 - y_1} = \frac{x - x_1}{x_2 - x_1} $$
                 </div>
@@ -247,19 +228,17 @@
                 <div class="math-step">
                     $$ y - y_1 = \left( \frac{y_2 - y_1}{x_2 - x_1} \right) (x - x_1) $$
                 </div>
-                <p><strong>Pertanyaan:</strong> Bagian yang ada di dalam kurung \( \left( \frac{y_2 - y_1}{x_2 - x_1} \right) \) sebenarnya rumus untuk mencari apa?</p>
-                
+                <p><strong>Pertanyaan:</strong> Bagian di dalam kurung \( \left( \frac{y_2 - y_1}{x_2 - x_1} \right) \) sebenarnya rumus untuk mencari apa?</p>
                 <div class="answer-area">
                     <input type="text" id="devAnswer1" placeholder="Ketikan jawabanmu...">
                     <button class="btn-check" onclick="checkDevAnswer(1)">Cek Jawaban</button>
                 </div>
                 <div id="devFeedback1" class="feedback"></div>
             </div>
-
             <div class="question-card">
-                <h3>2. Kapan Pakai Cara Ini?</h3>
-                <p>Menurut kelompokmu, manakah yang lebih mudah? Metode Danang atau Metode Ani? Jelaskan.</p>
-                <textarea id="devAnswer2" rows="4" style="width: 100%; margin-top:10px;" placeholder="Pendapat kami..."></textarea>
+                <h3>2. Kesimpulan Penggunaan Metode</h3>
+                <p>Menurut kalian, kapan waktu yang tepat untuk menggunakan pendapat <strong>Wahyu</strong> dan kapan menggunakan pendapat <strong>Lila</strong>?</p>
+                <textarea id="devAnswer2" rows="4" style="width: 100%; margin-top:10px;" placeholder="Tuliskan pendapat kelompokmu di sini..."></textarea>
                 <div class="answer-area" style="margin-top: 10px;">
                     <button class="btn-check" onclick="checkDevAnswer(2)">Kirim Pendapat</button>
                 </div>
@@ -270,23 +249,21 @@
         <section class="pbl-phase" id="phase-5">
             <div class="phase-badge">Uji Coba</div>
             <h2><i class="fa-solid fa-calculator"></i> Cek Kebenaran</h2>
-            
             <div class="question-card">
-                <p class="q-text">Jika lilin dibiarkan menyala selama <strong>60 menit</strong>, berapa sisa tingginya?</p>
+                <p class="q-text">Pada <strong>hari ke-10</strong>, berapa persen sisa tinta pulpen Dara?</p>
                 <div class="answer-area">
                     <input type="number" id="jawab5" placeholder="Angka saja..." style="width: 100px;">
-                    <span> cm</span>
+                    <span> %</span>
                     <button class="btn-check" onclick="checkAnswer(5)">Cek Sisa</button>
                 </div>
                 <div id="feedback5" class="feedback"></div>
             </div>
-
             <div class="question-card">
-                <p class="q-text">Pada menit ke berapa lilin tersebut akan <strong>habis total</strong>?</p>
+                <p class="q-text">Pada hari ke berapa tinta pulpen Dara akan <strong>habis total</strong>?</p>
                 <div class="answer-area">
                     <input type="number" id="jawab6" placeholder="Angka saja..." style="width: 100px;">
-                    <span> menit</span>
-                    <button class="btn-check" onclick="checkAnswer(6)">Cek Waktu</button>
+                    <span> hari</span>
+                    <button class="btn-check" onclick="checkAnswer(6)">Cek Hari</button>
                 </div>
                 <div id="feedback6" class="feedback"></div>
             </div>
@@ -295,7 +272,7 @@
         <section class="pbl-phase" id="phase-4">
             <div class="phase-badge">Fase 4: Menyajikan Hasil Karya</div>
             <h2><i class="fa-solid fa-person-chalkboard"></i> Presentasi</h2>
-            <div class="scenario-box" style="background: #e3f2fd; border-color: #2196F3;">
+            <div class="scenario-box" style="background: #f3e5f5; border-color: #AB47BC;">
                 <p>Upload link presentasi hasil diskusi kelompokmu (Canva/Drive/Youtube).</p>
                 <div class="question-card">
                     <input type="text" id="link_presentasi" placeholder="Tempel link di sini (https://...)" style="width: 100%;">
@@ -304,25 +281,8 @@
                     </button>
                     <div id="feedback_presentasi" class="feedback"></div>
                 </div>
-                <div id="guruFeedbackArea" class="hidden" style="margin-top: 20px; border-top: 2px dashed #ccc; padding-top: 10px;">
-                    <h3><i class="fa-solid fa-comments"></i> Umpan Balik Guru:</h3>
-                    <div id="textFeedbackGuru" style="background: #fff; padding: 15px; border-radius: 8px;"></div>
-                </div>
             </div>
         </section>
-
-        <div id="pointQuestionModal" class="modal" style="display: none;">
-            <div class="modal-content">
-                <span class="close" onclick="closeModal()">&times;</span>
-                <h3>Tebak Koordinat</h3>
-                <p id="questionText"></p>
-                <div class="answer-area">
-                    <input type="number" id="pointAnswer" placeholder="Jawab...">
-                    <button class="btn-check" onclick="checkPointAnswer()">Cek</button>
-                </div>
-                <div id="pointFeedback" class="feedback"></div>
-            </div>
-        </div>
 
         <div id="confirmationModal" class="modal" style="display: none;">
             <div class="modal-content">
@@ -355,7 +315,7 @@
             <div class="question-block" style="margin-top: 20px;">
                 <div class="q-header" style="display:flex; align-items:flex-start; gap:14px;">
                     <span style="min-width:36px; height:36px; background:#2196F3; color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.1rem; font-weight:bold; box-shadow:0 2px 6px rgba(33,150,243,0.4); flex-shrink:0; margin-top:4px;">2</span>
-                    <p class="q-text" style="margin:4px 0 0 0;">Selain kasus <strong>penyusutan tinggi lilin</strong> yang baru saja kamu selesaikan, tuliskan <strong>1 contoh lain</strong> dalam kehidupan sehari-hari yang bisa dihubungkan dengan persamaan garis lurus dan jelaskan mengapa!</p>
+                    <p class="q-text" style="margin:4px 0 0 0;">Selain kasus <strong>berkurangnya tinta pulpen setiap hari</strong> yang baru saja kamu selesaikan, tuliskan <strong>1 contoh lain</strong> dalam kehidupan sehari-hari yang bisa dihubungkan dengan persamaan garis lurus dan jelaskan mengapa!</p>
                 </div>
                 <div class="answer-area">
                     <textarea id="kesimpulan2" rows="4" placeholder="Tuliskan jawabanmu di sini..." style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 0.95rem; resize: vertical;"></textarea>
@@ -377,7 +337,6 @@
             <p>&copy; 2026 E-LKPD Matematika Interaktif - Materi Persamaan Garis Lurus</p>
         </footer>
     </div>
-    
-    <script src="lkpdkel2.js"></script>
+    <script src="lkpdkel7.js"></script>
 </body>
 </html>
