@@ -765,7 +765,7 @@ async function checkAnswer(type) {
         // Target: 200 = 1.25x + 35 -> 168.72 = 1.25x -> x = 132
         if (Math.abs(ans - 132) <= 0) {
             isCorrect = true;
-            message = '<i class="fa-solid fa-check-circle"></i> <strong>Benar!</strong> Pak Andi akan mendapatkan sekitar <strong>132 kWh</strong>.';
+            message = '<i class="fa-solid fa-check-circle"></i> <strong>Benar!</strong> Pak Andi akan mendapatkan daya listrik sebesar <strong>132 kWh</strong>.';
         } else {
             message = '<i class="fa-solid fa-circle-xmark"></i> Salah. Substitusi nilai y = 200 pada persamaan final (200 ribu rupiah).';
         }
