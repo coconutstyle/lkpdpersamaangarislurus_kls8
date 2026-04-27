@@ -71,7 +71,7 @@ function processAndRender(data) {
     }
 
     const students = {};
-    const ignoredQuestions = ['Info Kelompok', 'nama-siswa', 'Link Presentasi', 'KOMENTAR_KEL_1', 'KOMENTAR_KEL_2', 'KOMENTAR_KEL_3', 'KOMENTAR_KEL_4', 'KOMENTAR_KEL_5'];
+    const ignoredQuestions = ['Info Kelompok', 'nama-siswa', 'Link Presentasi', 'Pilihan Strategi', 'Alasan Strategi', 'Identifikasi Variabel', 'Alasan Kesimpulan', 'KOMENTAR_KEL_1', 'KOMENTAR_KEL_2', 'KOMENTAR_KEL_3', 'KOMENTAR_KEL_4', 'KOMENTAR_KEL_5'];
     
     data.forEach(row => {
         const name = row.student_name || "Tanpa Nama";

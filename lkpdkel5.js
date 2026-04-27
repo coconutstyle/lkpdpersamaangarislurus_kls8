@@ -844,9 +844,9 @@ function checkDevAnswer(num) {
 
     if (num === 1) {
         const rawAns = document.getElementById('devAnswer1').value.toLowerCase().trim();
-        const validAnswers = ['gradien', 'kemiringan', 'm', 'gradient'];
+        const validAnswers = ['gradien', 'kemiringan', 'gradient'];
 
-        if (validAnswers.some(key => rawAns.includes(key))) {
+        if (validAnswers.some(key => rawAns.includes(key)) || /\bm\b/.test(rawAns)) {
             feedback.innerHTML = '<i class="fa-solid fa-check-circle"></i> <strong>Benar!</strong> Itu adalah rumus <strong>Gradien (m)</strong>.';
             feedback.className = 'feedback correct';
         } else {
@@ -996,7 +996,7 @@ async function confirmSubmission() {
     // 7. Analisis Rumus (m, gradien, gradient, kemiringan = benar)
     const analisisRumus = document.getElementById('devAnswer1').value;
     pushData('Analisis Rumus', analisisRumus, 
-    ['gradien','kemiringan','m','gradient'].some(k => analisisRumus.toLowerCase().trim().includes(k)));
+    (['gradien','kemiringan','gradient'].some(k => analisisRumus.toLowerCase().trim().includes(k)) || /\bm\b/.test(analisisRumus.toLowerCase().trim())));
     
     // 8. Kapan Menggunakan Metode (>15 karakter = benar)
     const kapanMetode = document.getElementById('devAnswer2').value;
@@ -1173,7 +1173,7 @@ function tampilkanStatusJawaban(data) {
     const isGuruMode = urlParams.get('siswa');
     if (!isReviewMode && !isGuruMode) return;
 
-    const soalDiabaikan = ['Info Kelompok', 'nama-siswa', 'Link Presentasi', 'KOMENTAR_KEL_1', 'KOMENTAR_KEL_2', 'KOMENTAR_KEL_3', 'KOMENTAR_KEL_4', 'KOMENTAR_KEL_5'];
+    const soalDiabaikan = ['Info Kelompok', 'nama-siswa', 'Link Presentasi', 'Pilihan Strategi', 'Alasan Strategi', 'Identifikasi Variabel', 'Alasan Kesimpulan', 'KOMENTAR_KEL_1', 'KOMENTAR_KEL_2', 'KOMENTAR_KEL_3', 'KOMENTAR_KEL_4', 'KOMENTAR_KEL_5'];
     const soalData = data.filter(item =>
         !soalDiabaikan.includes(item.question) &&
         item.is_correct !== null &&
