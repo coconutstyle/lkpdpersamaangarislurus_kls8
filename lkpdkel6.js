@@ -67,6 +67,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // --- 1. DAFTAR ID YANG HARUS DISIMPAN OTOMATIS ---
     const inputIds = [
         'kelompok-siswa', 'nama-siswa',
+        'diskusi-alasan-strategi', 'diskusi-variabel',
         'coordAx', 'coordAy', 'coordBx', 'coordBy',
         'jawab_metode1', 'jawab_gradien', 'jawab_metode2',
         'jawab_kesimpulan',
@@ -78,6 +79,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // Load semua nilai dari localStorage saat halaman dibuka
     inputIds.forEach(id => loadInputValue(id));
 
+    // Load radio button pilihan strategi
+    const savedStrategi = localStorage.getItem('pilih-strategi');
+    if (savedStrategi) {
+        const radioEl = document.querySelector(`input[name="pilih-strategi"][value="${savedStrategi}"]`);
+        if (radioEl) radioEl.checked = true;
+    }
+
     // Simpan otomatis setiap kali ada perubahan
     inputIds.forEach(id => {
         const el = document.getElementById(id);
@@ -85,6 +93,13 @@ document.addEventListener('DOMContentLoaded', function() {
             el.addEventListener('input', () => saveInputValue(id));
             el.addEventListener('change', () => saveInputValue(id));
         }
+    });
+
+    // Simpan otomatis radio button pilihan strategi
+    document.querySelectorAll('input[name="pilih-strategi"]').forEach(radio => {
+        radio.addEventListener('change', () => {
+            localStorage.setItem('pilih-strategi', radio.value);
+        });
     });
 
     // Inisialisasi tanggal dan waktu
@@ -276,7 +291,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (feedback) feedback.innerHTML = '';
                 },
                 scales: {
-                    x: { type: 'linear', position: 'bottom', title: { display: true, text: 'Waktu (menit)', font: { weight: 'bold' } }, min: 0, max: 60, ticks: { stepSize: 3 } },
+                    x: { type: 'linear', position: 'bottom', title: { display: true, text: 'Waktu (menit)', font: { weight: 'bold' } }, min: 0, max: 40, ticks: { stepSize: 5 } },
                     y: { title: { display: true, text: 'Volume Air (liter)', font: { weight: 'bold' } }, min: 100, max: 500, ticks: { stepSize: 20 } }
                 },
                 plugins: {
@@ -303,6 +318,9 @@ function isiFormulirOtomatis(data) {
     }
 
     const mapSoal = {
+        'Pilihan Strategi': null, // ditangani khusus (radio button)
+        'Alasan Strategi': 'diskusi-alasan-strategi',
+        'Identifikasi Variabel': 'diskusi-variabel',
         'Metode Raka': 'jawab_metode1',
         'Metode Sinta': 'jawab_metode2',
         'Gradien Raka': 'jawab_gradien',
@@ -318,6 +336,13 @@ function isiFormulirOtomatis(data) {
     };
 
     data.forEach(item => {
+        // Restore radio button pilihan strategi
+        if (item.question === 'Pilihan Strategi') {
+            const radioEl = document.querySelector(`input[name="pilih-strategi"][value="${item.answer}"]`);
+            if (radioEl) radioEl.checked = true;
+            return;
+        }
+
         if (item.question === 'Visualisasi Grafik Kartesius') {
             try {
                 const points = JSON.parse(item.answer);
@@ -611,15 +636,15 @@ function savePresentation() {
     }
 }
 
-// --- LOGIKA CEK JAWABAN (Kolam Renang: y = 15x) ---
+// --- LOGIKA CEK JAWABAN (Kolam Renang: y = 16x) ---
 async function checkAnswer(type) {
     let feedback, message; 
     let isCorrect = false; // Default status jawaban adalah Salah
 
-    // Kunci: A(10,150), B(30,450) → m=15, c=0 → y = 15x
-    const KUNCI_M = 15;
+    // Kunci: A(10,160), B(30,480) → m=16, c=0 → y = 16x
+    const KUNCI_M = 16;
     const VALID_ANSWERS = [
-        "15x", "15x+0", "y=15x", "y=15x+0"
+        "16x", "16x+0", "y=16x", "y=16x+0"
     ];
 
     // --- METODE RAKA ---
@@ -635,7 +660,7 @@ async function checkAnswer(type) {
         let ans = rawInput.replace(/\s/g, '');
         if (VALID_ANSWERS.some(kunci => { const k = kunci.replace("y=",""); return ans === k || ans === "y="+k; })) {
             isCorrect = true;
-            message = '<i class="fa-solid fa-check-circle"></i> <strong>Benar!</strong> Rumus akhirnya adalah <strong>y = 15x</strong> (atau 15x).';
+            message = '<i class="fa-solid fa-check-circle"></i> <strong>Benar!</strong> Rumus akhirnya adalah <strong>y = 16x</strong> (atau 16x).';
         } else {
             message = '<i class="fa-solid fa-circle-xmark"></i> Kurang tepat. Cek lagi operasi pada persamaannya!';
         }
@@ -657,7 +682,7 @@ async function checkAnswer(type) {
         }
         if (VALID_ANSWERS.some(kunci => { const k = kunci.replace("y=",""); return rawInput === k || rawInput === "y="+k; })) {
             isCorrect = true;
-            message = '<i class="fa-solid fa-check-circle"></i> <strong>Sempurna!</strong> Sinta menemukan bahwa volume air bertambah 15 liter setiap menitnya.';
+            message = '<i class="fa-solid fa-check-circle"></i> <strong>Sempurna!</strong> Sinta menemukan bahwa volume air bertambah 16 liter setiap menitnya.';
         } else {
             message = '<i class="fa-solid fa-circle-xmark"></i> Gradien benar, tapi persamaan akhirnya salah hitung.';
         }
@@ -688,10 +713,10 @@ async function checkAnswer(type) {
         let ansRaw = document.getElementById('jawab5').value;
         let ans = parseFloat(ansRaw.replace(',', '.')); 
 
-        // Kunci: 900
-        if (Math.abs(ans - 900) <= 0) {
+        // Kunci: 960
+        if (Math.abs(ans - 960) <= 0) {
             isCorrect = true;
-            message = '<i class="fa-solid fa-check-circle"></i> <strong>Benar!</strong> Volume air setelah 60 menit adalah <strong>900 liter</strong>.';
+            message = '<i class="fa-solid fa-check-circle"></i> <strong>Benar!</strong> Volume air setelah 60 menit adalah <strong>960 liter</strong>.';
         } else {
             message = '<i class="fa-solid fa-circle-xmark"></i> Salah. Substitusi nilai x = 60 pada persamaan final.';
         }
@@ -702,10 +727,10 @@ async function checkAnswer(type) {
         let ansString = document.getElementById('jawab6').value;
         let ans = parseFloat(ansString.replace(',', '.'));
 
-        // Kunci: 133.3
-        if (!isNaN(ans) && Math.abs(ans - 133.3) <= 0) {
+        // Kunci: 125
+        if (!isNaN(ans) && Math.abs(ans - 125) <= 0) {
             isCorrect = true;
-            message = '<i class="fa-solid fa-check-circle"></i> <strong>Benar!</strong> Kolam akan penuh (2.000 liter) setelah sekitar <strong>133.3 menit</strong>.';
+            message = '<i class="fa-solid fa-check-circle"></i> <strong>Benar!</strong> Kolam akan penuh (2.000 liter) setelah <strong>125 menit</strong>.';
         } else {
             message = '<i class="fa-solid fa-circle-xmark"></i> Salah. Substitusi y = 2000 pada persamaan final.';
         }
@@ -725,12 +750,12 @@ async function checkCoordAnswer(point) {
     let correctX, correctY, inputX, inputY;
     if (point === 'A') { 
         correctX = 10; 
-        correctY = 150; 
+        correctY = 160; 
         inputX = parseFloat(document.getElementById('coordAx').value); 
         inputY = parseFloat(document.getElementById('coordAy').value); 
     } else if (point === 'B') { 
         correctX = 30; 
-        correctY = 450; 
+        correctY = 480; 
         inputX = parseFloat(document.getElementById('coordBx').value); 
         inputY = parseFloat(document.getElementById('coordBy').value); 
     } else return;
@@ -756,9 +781,9 @@ async function checkGraphPoints() {
     const points = window.simpanTitik;
     const feedback = document.getElementById('graphFeedback');
     
-    // A(10, 150), B(30, 450)
-    const hasA = points.some(p => Math.abs(p.x - 10) <= 1 && Math.abs(p.y - 150) <= 10);
-    const hasB = points.some(p => Math.abs(p.x - 30) <= 1 && Math.abs(p.y - 450) <= 10);
+    // A(10, 160), B(30, 480)
+    const hasA = points.some(p => Math.abs(p.x - 10) <= 0 && Math.abs(p.y - 160) <= 0);
+    const hasB = points.some(p => Math.abs(p.x - 30) <= 0 && Math.abs(p.y - 480) <= 0);
 
     // KONDISI 1: SUDAH MENEMUKAN KEDUA TITIK (PAS)
     if (hasA && hasB) {
@@ -775,7 +800,7 @@ async function checkGraphPoints() {
     else if (hasA && !hasB) {
         feedback.innerHTML = `
             <i class="fa-solid fa-circle-exclamation"></i> <strong>Bagus! Titik A sudah pas.</strong><br>
-            Tapi <strong>Titik B</strong> (30, 450) belum ketemu. Cari lagi ya!
+            Tapi <strong>Titik B</strong> (30, 480) belum ketemu. Cari lagi ya!
         `;
         feedback.className = 'feedback wrong'; // Warna Merah (atau kuning jika diatur CSS)
         
@@ -786,7 +811,7 @@ async function checkGraphPoints() {
     else if (!hasA && hasB) {
         feedback.innerHTML = `
             <i class="fa-solid fa-circle-exclamation"></i> <strong>Bagus! Titik B sudah pas.</strong><br>
-            Tapi <strong>Titik A</strong> (10, 150) belum ketemu. Cari lagi ya!
+            Tapi <strong>Titik A</strong> (10, 160) belum ketemu. Cari lagi ya!
         `;
         feedback.className = 'feedback wrong';
         
@@ -826,7 +851,7 @@ function submitReason() {
 function checkFinalEquation() {
     const equation = document.getElementById('finalEquation').value.toLowerCase().replace(/\s/g, '').replace(/,/g, '.');
     const feedback = document.getElementById('finalFeedback');
-    if (equation === '15x' || equation === 'y=15x' || equation === '15x+0' || equation === 'y=15x+0') {
+    if (equation === '16x' || equation === 'y=16x' || equation === '16x+0' || equation === 'y=16x+0') {
         feedback.innerHTML = '<i class="fa-solid fa-check-circle"></i> <strong>Benar!</strong> Persamaan final telah dikonfirmasi.';
         feedback.className = 'feedback correct';
     } else {
@@ -851,7 +876,7 @@ function checkDevAnswer(num) {
         }
     } else if (num === 2) {
         const ans = document.getElementById('devAnswer2').value.trim();
-        if (ans.length > 15) {
+        if (ans.length > 16) {
             feedback.innerHTML = '<i class="fa-solid fa-check-circle"></i> <strong>Pendapat Diterima!</strong> Analisis yang bagus.';
             feedback.className = 'feedback correct';
         } else {
@@ -938,7 +963,7 @@ async function confirmSubmission() {
     const sName = document.getElementById('nama-siswa').value || 'Tanpa Nama';
     let dataToSave = [];
 
-    const isEq = (v) => { if(!v) return false; const c = v.toLowerCase().replace(/\s/g,'').replace(/,/g, '.'); return c === '15x' || c === 'y=15x' || c === '15x+0' || c === 'y=15x+0'; };
+    const isEq = (v) => { if(!v) return false; const c = v.toLowerCase().replace(/\s/g,'').replace(/,/g, '.'); return c === '16x' || c === 'y=16x' || c === '16x+0' || c === 'y=16x+0'; };
     const pushData = (q, ans, corr) => dataToSave.push({ student_name: sName, question: q, answer: ans, is_correct: corr });
 
     // === VALIDASI SOAL UTAMA ===
@@ -946,9 +971,9 @@ async function confirmSubmission() {
     pushData('Metode Sinta', document.getElementById('jawab_metode2').value, isEq(document.getElementById('jawab_metode2').value));
     
     let v5 = parseFloat(document.getElementById('jawab5').value.replace(',','.'));
-    pushData('Volume 30menit', document.getElementById('jawab5').value, Math.abs(v5 - 450) <= 0);
+    pushData('Volume 30menit', document.getElementById('jawab5').value, Math.abs(v5 - 960) <= 0);
     let v6 = parseFloat(document.getElementById('jawab6').value.replace(',','.'));
-    pushData('Waktu Penuh', document.getElementById('jawab6').value, Math.abs(v6 - 133) <= 0);
+    pushData('Waktu Penuh', document.getElementById('jawab6').value, Math.abs(v6 - 125) <= 0);
 
     // === VALIDASI BARU: 8 PERTANYAAN TAMBAHAN ===
     
@@ -958,17 +983,17 @@ async function confirmSubmission() {
     const coordBx = parseFloat(document.getElementById('coordBx').value);
     const coordBy = parseFloat(document.getElementById('coordBy').value);
     
-    pushData('Koordinat A', `(${coordAx}, ${coordAy})`, coordAx === 10 && coordAy === 150);
-    pushData('Koordinat B', `(${coordBx}, ${coordBy})`, coordBx === 30 && coordBy === 450);
+    pushData('Koordinat A', `(${coordAx}, ${coordAy})`, coordAx === 10 && coordAy === 160);
+    pushData('Koordinat B', `(${coordBx}, ${coordBy})`, coordBx === 30 && coordBy === 480);
     
     // 3. Gradien (Metode 2)
     let gVal = parseFloat(document.getElementById('jawab_gradien').value.replace(',','.'));
-    pushData('Gradien Raka', document.getElementById('jawab_gradien').value, Math.abs(gVal - (15)) < 0.1);
+    pushData('Gradien Raka', document.getElementById('jawab_gradien').value, Math.abs(gVal - (16)) < 0.1);
     
     // 4. Visualisasi Grafik Kartesius
     const points = window.simpanTitik || [];
-    const hasA = points.some(p => Math.abs(p.x - 10) <= 1 && Math.abs(p.y - 150) <= 3);
-    const hasB = points.some(p => Math.abs(p.x - 30) <= 1 && Math.abs(p.y - 450) <= 9);
+    const hasA = points.some(p => Math.abs(p.x - 10) <= 0 && Math.abs(p.y - 160) <= 0);
+    const hasB = points.some(p => Math.abs(p.x - 30) <= 0 && Math.abs(p.y - 480) <= 0);
     pushData('Visualisasi Grafik Kartesius', JSON.stringify(window.simpanTitik), hasA && hasB);
     
     // 5. Refleksi (Ya atau Tidak)
@@ -992,6 +1017,12 @@ async function confirmSubmission() {
     const kapanMetode = document.getElementById('devAnswer2').value;
     pushData('Pendapat Kelompok', kapanMetode, kapanMetode.length > 15);
 
+    // === FASE 2 (tidak divalidasi benar/salah) ===
+    const pilihanStrategi = document.querySelector('input[name="pilih-strategi"]:checked');
+    pushData('Pilihan Strategi', pilihanStrategi ? pilihanStrategi.value : '', false);
+    pushData('Alasan Strategi', document.getElementById('diskusi-alasan-strategi').value, false);
+    pushData('Identifikasi Variabel', document.getElementById('diskusi-variabel').value, false);
+
     // === DATA INFO (TIDAK DIVALIDASI) ===
     pushData('Kesimpulan Konsep', document.getElementById('kesimpulan1').value, document.getElementById('kesimpulan1').value.trim().length >= 20);
     pushData('Kesimpulan Kontekstual', document.getElementById('kesimpulan2').value, document.getElementById('kesimpulan2').value.trim().length >= 20);
@@ -1002,7 +1033,7 @@ async function confirmSubmission() {
     if (linkPres && linkPres.value) pushData('Link Presentasi', linkPres.value, false);
 
     // 1. SIMPAN LOKAL DULU (PENTING! Agar Review Mode jalan 100%)
-    localStorage.removeItem('dataReviewSiswa');
+    localStorage.removeItem('dataReviewSiswa_Kel6');
     
     // Simpan nama siswa ke localStorage untuk review mode
     localStorage.setItem('nama-siswa', sName);
@@ -1017,6 +1048,12 @@ async function confirmSubmission() {
     // 2. KIRIM DATABASE (Try-Catch agar kalau internet mati, lokal tetap aman)
     try {
         if (supabaseClient) {
+            // Hapus data lama dulu agar tidak dobel saat submit ulang
+            await supabaseClient
+                .from('student_answers')
+                .delete()
+                .eq('student_name', sName);
+
             const { error: insertError } = await supabaseClient.from('student_answers').insert(dataToSave);
             if (insertError) {
                 alert('Gagal menyimpan jawaban ke database: ' + insertError.message + '\nSilakan hubungi guru.');

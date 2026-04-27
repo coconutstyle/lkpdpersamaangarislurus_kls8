@@ -136,16 +136,16 @@ h3 {
 /* Scroll Wrapper */
 .chart-scroll-wrapper {
     width: 100%;
-    height: 400px;
-    overflow: auto;
+    height: 450px;        /* sesuaikan tinggi yang Anda inginkan */
+    overflow: hidden;     /* ← ganti dari 'auto' ke 'hidden' */
     border: 1px solid #eee;
     border-radius: 10px;
     background: #f9f9f9;
 }
 
 .chart-large-area {
-    width: 1200px; /* Lebar total grafik */
-    height: 600px; /* Tinggi total grafik */
+    width: 100%;          /* ← ganti dari 1200px ke 100% */
+    height: 100%;         /* ← ganti dari 600px ke 100% */
     position: relative;
 }
 

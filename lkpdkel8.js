@@ -67,6 +67,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // --- 1. DAFTAR ID YANG HARUS DISIMPAN OTOMATIS ---
     const inputIds = [
         'kelompok-siswa', 'nama-siswa',
+        'diskusi-alasan-strategi', 'diskusi-variabel',
         'coordAx', 'coordAy', 'coordBx', 'coordBy',
         'jawab_metode1', 'jawab_gradien', 'jawab_metode2',
         'jawab_kesimpulan',
@@ -78,6 +79,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // Load semua nilai dari localStorage saat halaman dibuka
     inputIds.forEach(id => loadInputValue(id));
 
+    // Load radio button pilihan strategi
+    const savedStrategi = localStorage.getItem('pilih-strategi');
+    if (savedStrategi) {
+        const radioEl = document.querySelector(`input[name="pilih-strategi"][value="${savedStrategi}"]`);
+        if (radioEl) radioEl.checked = true;
+    }
+
     // Simpan otomatis setiap kali ada perubahan
     inputIds.forEach(id => {
         const el = document.getElementById(id);
@@ -85,6 +93,13 @@ document.addEventListener('DOMContentLoaded', function() {
             el.addEventListener('input', () => saveInputValue(id));
             el.addEventListener('change', () => saveInputValue(id));
         }
+    });
+
+    // Simpan otomatis radio button pilihan strategi
+    document.querySelectorAll('input[name="pilih-strategi"]').forEach(radio => {
+        radio.addEventListener('change', () => {
+            localStorage.setItem('pilih-strategi', radio.value);
+        });
     });
 
     // Inisialisasi tanggal dan waktu
@@ -303,13 +318,16 @@ function isiFormulirOtomatis(data) {
     }
 
     const mapSoal = {
+        'Pilihan Strategi': null, // ditangani khusus (radio button)
+        'Alasan Strategi': 'diskusi-alasan-strategi',
+        'Identifikasi Variabel': 'diskusi-variabel',
         'Metode Dewi': 'jawab_metode1',
         'Metode Fajar': 'jawab_metode2',
         'Gradien Fajar': 'jawab_gradien',
         'Refleksi': 'jawab_kesimpulan',
         'Alasan Kesimpulan': 'reasonText',
         'Persamaan Final': 'finalEquation',
-        'Harga Hari-44': 'jawab5',
+        'Harga Hari-12': 'jawab5',
         'Hari Target': 'jawab6',
         'Info Kelompok': 'kelompok-siswa',
         'Analisis Rumus': 'devAnswer1',
@@ -318,6 +336,12 @@ function isiFormulirOtomatis(data) {
     };
 
     data.forEach(item => {
+        // Restore radio button pilihan strategi
+        if (item.question === 'Pilihan Strategi') {
+            const radioEl = document.querySelector(`input[name="pilih-strategi"][value="${item.answer}"]`);
+            if (radioEl) radioEl.checked = true;
+            return;
+        }
         if (item.question === 'Visualisasi Grafik Kartesius') {
             try {
                 const points = JSON.parse(item.answer);
@@ -616,11 +640,11 @@ async function checkAnswer(type) {
     let feedback, message; 
     let isCorrect = false; // Default status jawaban adalah Salah
 
-    // Kunci: A(10,1750), B(30,2250) → m=25, c=1500 → y = 25x + 1500
-    const KUNCI_M = 25;
+    // Kunci: A(2,2050), B(5,2200) → m=50, c=1950 → y = 50x + 1950
+    const KUNCI_M = 50;
     const VALID_ANSWERS = [
-        "25x+1500", "y=25x+1500",
-        "25x+1500", "y=25x+1500"
+        "50x+1950", "y=50x+1950",
+        "50x+1950", "y=50x+1950"
     ];
 
     // --- METODE DEWI ---
@@ -636,7 +660,7 @@ async function checkAnswer(type) {
         let ans = rawInput.replace(/\s/g, '');
         if (VALID_ANSWERS.some(kunci => { const k = kunci.replace("y=",""); return ans === k || ans === "y="+k; })) {
             isCorrect = true;
-            message = '<i class="fa-solid fa-check-circle"></i> <strong>Benar!</strong> Rumus akhirnya adalah <strong>y = 25x + 1500</strong>. (atau 25x + 1500).';
+            message = '<i class="fa-solid fa-check-circle"></i> <strong>Benar!</strong> Rumus akhirnya adalah <strong>y = 50x + 1950</strong>. (atau 50x + 1950).';
         } else {
             message = '<i class="fa-solid fa-circle-xmark"></i> Kurang tepat. Cek lagi operasi pada persamaannya!';
         }
@@ -658,7 +682,7 @@ async function checkAnswer(type) {
         }
         if (VALID_ANSWERS.some(kunci => { const k = kunci.replace("y=",""); return rawInput === k || rawInput === "y="+k; })) {
             isCorrect = true;
-            message = '<i class="fa-solid fa-check-circle"></i> <strong>Sempurna!</strong> Fajar menemukan kenaikan harga emas setiap hari adalah Rp25.000';
+            message = '<i class="fa-solid fa-check-circle"></i> <strong>Sempurna!</strong> Fajar menemukan kenaikan harga emas setiap harinya adalah Rp50.000';
         } else {
             message = '<i class="fa-solid fa-circle-xmark"></i> Gradien benar, tapi persamaan akhirnya salah hitung.';
         }
@@ -689,12 +713,12 @@ async function checkAnswer(type) {
         let ansRaw = document.getElementById('jawab5').value;
         let ans = parseFloat(ansRaw.replace(',', '.')); 
 
-        // Kunci: 2600
-        if (Math.abs(ans - 2600) <= 0) {
+        // Kunci: 2550
+        if (Math.abs(ans - 2550) <= 0) {
             isCorrect = true;
-            message = '<i class="fa-solid fa-check-circle"></i> <strong>Benar!</strong> Pada hari ke-44, harga emas diprediksi <strong>Rp2.600.000/gram</strong>.';
+            message = '<i class="fa-solid fa-check-circle"></i> <strong>Benar!</strong> Pada hari ke-12, harga emas diprediksi <strong>Rp2.550.000/gram</strong>.';
         } else {
-            message = '<i class="fa-solid fa-circle-xmark"></i> Salah. Substitusi nilai x = 44 pada persamaan final.';
+            message = '<i class="fa-solid fa-circle-xmark"></i> Salah. Substitusi nilai x = 12 pada persamaan final.';
         }
     }
     // --- UJI COBA 2 ---
@@ -703,10 +727,10 @@ async function checkAnswer(type) {
         let ansString = document.getElementById('jawab6').value;
         let ans = parseFloat(ansString.replace(',', '.'));
 
-        // Kunci: 60
-        if (!isNaN(ans) && Math.abs(ans - 60) <= 0) {
+        // Kunci: 21
+        if (!isNaN(ans) && Math.abs(ans - 21) <= 0) {
             isCorrect = true;
-            message = '<i class="fa-solid fa-check-circle"></i> <strong>Benar!</strong> Harga emas mencapai Rp3.000.000/gram pada hari ke-<strong>60</strong>.';
+            message = '<i class="fa-solid fa-check-circle"></i> <strong>Benar!</strong> Harga emas mencapai Rp3.000.000/gram pada hari ke-<strong>21</strong>.';
         } else {
             message = '<i class="fa-solid fa-circle-xmark"></i> Salah. Substitusi y = 3000 pada persamaan final.';
         }
@@ -725,13 +749,13 @@ async function checkCoordAnswer(point) {
     const feedback = document.getElementById('coordFeedback');
     let correctX, correctY, inputX, inputY;
     if (point === 'A') { 
-        correctX = 10; 
-        correctY = 1750; 
+        correctX = 2; 
+        correctY = 2050; 
         inputX = parseFloat(document.getElementById('coordAx').value); 
         inputY = parseFloat(document.getElementById('coordAy').value); 
     } else if (point === 'B') { 
-        correctX = 30; 
-        correctY = 2250; 
+        correctX = 5; 
+        correctY = 2200; 
         inputX = parseFloat(document.getElementById('coordBx').value); 
         inputY = parseFloat(document.getElementById('coordBy').value); 
     } else return;
@@ -757,9 +781,9 @@ async function checkGraphPoints() {
     const points = window.simpanTitik;
     const feedback = document.getElementById('graphFeedback');
     
-    // A(10, 1750), B(30, 2250)
-    const hasA = points.some(p => Math.abs(p.x - 10) <= 1 && Math.abs(p.y - 1750) <= 25);
-    const hasB = points.some(p => Math.abs(p.x - 30) <= 1 && Math.abs(p.y - 2250) <= 25);
+    // A(2, 2050), B(5, 2200)
+    const hasA = points.some(p => Math.abs(p.x - 2) <= 0 && Math.abs(p.y - 2050) <= 0);
+    const hasB = points.some(p => Math.abs(p.x - 5) <= 0 && Math.abs(p.y - 2200) <= 0);
 
     // KONDISI 1: SUDAH MENEMUKAN KEDUA TITIK (PAS)
     if (hasA && hasB) {
@@ -776,7 +800,7 @@ async function checkGraphPoints() {
     else if (hasA && !hasB) {
         feedback.innerHTML = `
             <i class="fa-solid fa-circle-exclamation"></i> <strong>Bagus! Titik A sudah pas.</strong><br>
-            Tapi <strong>Titik B</strong> (30, 2250) belum ketemu. Cari lagi ya!
+            Tapi <strong>Titik B</strong> (5, 2200) belum ketemu. Cari lagi ya!
         `;
         feedback.className = 'feedback wrong'; // Warna Merah (atau kuning jika diatur CSS)
         
@@ -787,7 +811,7 @@ async function checkGraphPoints() {
     else if (!hasA && hasB) {
         feedback.innerHTML = `
             <i class="fa-solid fa-circle-exclamation"></i> <strong>Bagus! Titik B sudah pas.</strong><br>
-            Tapi <strong>Titik A</strong> (10, 1750) belum ketemu. Cari lagi ya!
+            Tapi <strong>Titik A</strong> (2, 2050) belum ketemu. Cari lagi ya!
         `;
         feedback.className = 'feedback wrong';
         
@@ -827,7 +851,7 @@ function submitReason() {
 function checkFinalEquation() {
     const equation = document.getElementById('finalEquation').value.toLowerCase().replace(/\s/g, '').replace(/,/g, '.');
     const feedback = document.getElementById('finalFeedback');
-    if (equation === '25x+1500' || equation === 'y=25x+1500') {
+    if (equation === '50x+1950' || equation === 'y=50x+1950') {
         feedback.innerHTML = '<i class="fa-solid fa-check-circle"></i> <strong>Benar!</strong> Persamaan final telah dikonfirmasi.';
         feedback.className = 'feedback correct';
     } else {
@@ -939,7 +963,7 @@ async function confirmSubmission() {
     const sName = document.getElementById('nama-siswa').value || 'Tanpa Nama';
     let dataToSave = [];
 
-    const isEq = (v) => { if(!v) return false; const c = v.toLowerCase().replace(/\s/g,'').replace(/,/g, '.'); return c === '25x+1500' || c === 'y=25x+1500'; };
+    const isEq = (v) => { if(!v) return false; const c = v.toLowerCase().replace(/\s/g,'').replace(/,/g, '.'); return c === '50x+1950' || c === 'y=50x+1950'; };
     const pushData = (q, ans, corr) => dataToSave.push({ student_name: sName, question: q, answer: ans, is_correct: corr });
 
     // === VALIDASI SOAL UTAMA ===
@@ -947,9 +971,9 @@ async function confirmSubmission() {
     pushData('Metode Fajar', document.getElementById('jawab_metode2').value, isEq(document.getElementById('jawab_metode2').value));
     
     let v5 = parseFloat(document.getElementById('jawab5').value.replace(',','.'));
-    pushData('Harga Hari-44', document.getElementById('jawab5').value, Math.abs(v5 - 2600) <= 0);
+    pushData('Harga Hari-12', document.getElementById('jawab5').value, Math.abs(v5 - 2550) <= 0);
     let v6 = parseFloat(document.getElementById('jawab6').value.replace(',','.'));
-    pushData('Hari Target', document.getElementById('jawab6').value, Math.abs(v6 - 60) <= 0);
+    pushData('Hari Target', document.getElementById('jawab6').value, Math.abs(v6 - 21) <= 0);
 
     // === VALIDASI BARU: 8 PERTANYAAN TAMBAHAN ===
     
@@ -959,17 +983,17 @@ async function confirmSubmission() {
     const coordBx = parseFloat(document.getElementById('coordBx').value);
     const coordBy = parseFloat(document.getElementById('coordBy').value);
     
-    pushData('Koordinat A', `(${coordAx}, ${coordAy})`, coordAx === 10 && coordAy === 1750);
-    pushData('Koordinat B', `(${coordBx}, ${coordBy})`, coordBx === 30 && coordBy === 2250);
+    pushData('Koordinat A', `(${coordAx}, ${coordAy})`, coordAx === 2 && coordAy === 2050);
+    pushData('Koordinat B', `(${coordBx}, ${coordBy})`, coordBx === 5 && coordBy === 2200);
     
     // 3. Gradien (Metode 2)
     let gVal = parseFloat(document.getElementById('jawab_gradien').value.replace(',','.'));
-    pushData('Gradien Fajar', document.getElementById('jawab_gradien').value, Math.abs(gVal - (25)) < 0.1);
+    pushData('Gradien Fajar', document.getElementById('jawab_gradien').value, Math.abs(gVal - (50)) < 0.1);
     
     // 4. Visualisasi Grafik Kartesius
     const points = window.simpanTitik || [];
-    const hasA = points.some(p => Math.abs(p.x - 10) <= 1 && Math.abs(p.y - 1750) <= 35);
-    const hasB = points.some(p => Math.abs(p.x - 30) <= 1 && Math.abs(p.y - 2250) <= 45);
+    const hasA = points.some(p => Math.abs(p.x - 2) <= 0 && Math.abs(p.y - 2050) <= 0);
+    const hasB = points.some(p => Math.abs(p.x - 5) <= 0 && Math.abs(p.y - 2200) <= 0);
     pushData('Visualisasi Grafik Kartesius', JSON.stringify(window.simpanTitik), hasA && hasB);
     
     // 5. Refleksi (Ya atau Tidak)
@@ -994,16 +1018,22 @@ async function confirmSubmission() {
     pushData('Pendapat Kelompok', kapanMetode, kapanMetode.length > 15);
 
     // === DATA INFO (TIDAK DIVALIDASI) ===
+    // Fase 2: Pilihan Strategi & Identifikasi Variabel
+    const pilihanStrategi = document.querySelector('input[name="pilih-strategi"]:checked');
+    pushData('Pilihan Strategi', pilihanStrategi ? pilihanStrategi.value : '', true);
+    pushData('Alasan Strategi', document.getElementById('diskusi-alasan-strategi').value, true);
+    pushData('Identifikasi Variabel', document.getElementById('diskusi-variabel').value, true);
+
     pushData('Kesimpulan Konsep', document.getElementById('kesimpulan1').value, document.getElementById('kesimpulan1').value.trim().length >= 20);
     pushData('Kesimpulan Kontekstual', document.getElementById('kesimpulan2').value, document.getElementById('kesimpulan2').value.trim().length >= 20);
-    pushData('Info Kelompok', '8', false);
+    pushData('Info Kelompok', '8', true);
 
     // [FIX LINK] Pastikan diambil saat submit
     const linkPres = document.getElementById('link_presentasi');
-    if (linkPres && linkPres.value) pushData('Link Presentasi', linkPres.value, false);
+    if (linkPres && linkPres.value) pushData('Link Presentasi', linkPres.value, true);
 
     // 1. SIMPAN LOKAL DULU (PENTING! Agar Review Mode jalan 100%)
-    localStorage.removeItem('dataReviewSiswa');
+    localStorage.removeItem('dataReviewSiswa_Kel8');
     
     // Simpan nama siswa ke localStorage untuk review mode
     localStorage.setItem('nama-siswa', sName);
@@ -1018,6 +1048,12 @@ async function confirmSubmission() {
     // 2. KIRIM DATABASE (Try-Catch agar kalau internet mati, lokal tetap aman)
     try {
         if (supabaseClient) {
+            // Hapus data lama dulu agar tidak dobel saat submit ulang
+            await supabaseClient
+                .from('student_answers')
+                .delete()
+                .eq('student_name', sName);
+
             const { error: insertError } = await supabaseClient.from('student_answers').insert(dataToSave);
             if (insertError) {
                 alert('Gagal menyimpan jawaban ke database: ' + insertError.message + '\nSilakan hubungi guru.');

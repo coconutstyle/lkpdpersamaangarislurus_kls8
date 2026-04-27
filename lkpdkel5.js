@@ -16,12 +16,67 @@ try {
 window.simpanTitik = [];
 window.myChart = null;
 
+// Fungsi untuk menyimpan input ke localStorage
+function saveInputValue(id) {
+    const element = document.getElementById(id);
+    if (element) localStorage.setItem(id, element.value);
+}
+
+// Fungsi untuk memuat input dari localStorage
+function loadInputValue(id) {
+    const value = localStorage.getItem(id);
+    const element = document.getElementById(id);
+    if (element && value !== null) element.value = value;
+}
+
+function initDateTime() {
+    const now = new Date();
+    const tanggalEl = document.getElementById('tanggal');
+    if (tanggalEl) tanggalEl.textContent = now.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+}
+
 // =========================================
 // 2. MAIN LOGIC (CHART & REVIEW MODE)
 // =========================================
 
 document.addEventListener('DOMContentLoaded', function() {
-    
+    // --- DAFTAR ID YANG HARUS DISIMPAN OTOMATIS ---
+    const inputIds = [
+        'kelompok-siswa', 'nama-siswa',
+        'diskusi-alasan-strategi', 'diskusi-variabel',
+        'coordAx', 'coordAy', 'coordBx', 'coordBy',
+        'jawab_metode1', 'jawab_gradien', 'jawab_metode2',
+        'jawab_kesimpulan',
+        'jawab5', 'jawab6',
+        'devAnswer1', 'devAnswer2',
+        'kesimpulan1', 'kesimpulan2'
+    ];
+    inputIds.forEach(id => loadInputValue(id));
+
+    // Load radio button pilihan strategi
+    const savedStrategi = localStorage.getItem('pilih-strategi');
+    if (savedStrategi) {
+        const radioEl = document.querySelector(`input[name="pilih-strategi"][value="${savedStrategi}"]`);
+        if (radioEl) radioEl.checked = true;
+    }
+
+    inputIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener('input', () => saveInputValue(id));
+            el.addEventListener('change', () => saveInputValue(id));
+        }
+    });
+
+    // Simpan otomatis radio button pilihan strategi
+    document.querySelectorAll('input[name="pilih-strategi"]').forEach(radio => {
+        radio.addEventListener('change', () => {
+            localStorage.setItem('pilih-strategi', radio.value);
+        });
+    });
+
+    initDateTime();
+
     // 1. TAMPILAN KELOMPOK
     const elSelect = document.getElementById('kelompok-siswa');
     if (elSelect) {
@@ -428,14 +483,24 @@ function isiFormulirOtomatis(data) {
     if (dataSiswa) document.getElementById('nama-siswa').value = dataSiswa.student_name;
 
     const mapSoal = {
+        'Pilihan Strategi': null, // ditangani khusus (radio button)
+        'Alasan Strategi': 'diskusi-alasan-strategi',
+        'Identifikasi Variabel': 'diskusi-variabel',
         'Metode Karyawan B': 'jawab_metode1', 'Gradien Karyawan A': 'jawab_gradien', 'Metode Karyawan A': 'jawab_metode2',
         'Kesimpulan': 'jawab_kesimpulan', 'Alasan Kesimpulan': 'reasonText', 'Persamaan Final': 'finalEquation',
-        'Biaya 85 Nasi Kotak': 'jawab5', 'Maksimal Nasi Kotak': 'jawab6',
+        'Biaya 84 Nasi Kotak': 'jawab5', 'Maksimal Nasi Kotak': 'jawab6',
         'Info Kelompok': 'kelompok-siswa', 'Analisis Rumus': 'devAnswer1', 'Pendapat Kelompok': 'devAnswer2',
         'Link Presentasi': 'link_presentasi'
     };
 
     data.forEach(item => {
+        // Restore radio button pilihan strategi
+        if (item.question === 'Pilihan Strategi') {
+            const radioEl = document.querySelector(`input[name="pilih-strategi"][value="${item.answer}"]`);
+            if (radioEl) radioEl.checked = true;
+            return;
+        }
+
         if (item.question === 'Visualisasi Grafik Kartesius') {
             try { 
                 const points = JSON.parse(item.answer);
@@ -578,12 +643,12 @@ function savePresentation() {
     }
 }
 
-// Logic Cek Jawaban (Catering: y = 18x)
+// Logic Cek Jawaban (Catering: y = 17.5x)
 async function checkAnswer(type) {
     let feedback, message; 
     let isCorrect = false;
-    const KUNCI_M = 18;
-    const VALID_ANSWERS = ["18x", "y=18x", "18x+0", "y=18x+0"];
+    const KUNCI_M = 17.5;
+    const VALID_ANSWERS = ["17.5x", "y=17.5x", "17.5x+0", "y=17.5x+0"];
 
     if (type === 'metode1') { 
         feedback = document.getElementById('feedback_metode1');
@@ -595,7 +660,7 @@ async function checkAnswer(type) {
         let ans = rawInput.replace(/\s/g, '');
         if (VALID_ANSWERS.some(kunci => { const k = kunci.replace("y=",""); return ans === k || ans === "y="+k; })) {
             isCorrect = true;
-            message = '<i class="fa-solid fa-check-circle"></i> <strong>Benar!</strong> Rumus akhirnya adalah <strong>y = 18x </strong> (atau 18x).';
+            message = '<i class="fa-solid fa-check-circle"></i> <strong>Benar!</strong> Rumus akhirnya adalah <strong>y = 17.5x </strong> (atau 17.5x).';
         } else {
             message = '<i class="fa-solid fa-circle-xmark"></i> Kurang tepat. Cek lagi operasi pada persamaannya!';
         }
@@ -616,7 +681,7 @@ async function checkAnswer(type) {
         }
         if (VALID_ANSWERS.some(kunci => { const k = kunci.replace("y=",""); return rawInput === k || rawInput === "y="+k; })) {
             isCorrect = true;
-            message = '<i class="fa-solid fa-check-circle"></i> <strong>Sempurna!</strong> Karyawan A menemukan harga nasi kotak per porsi adalah Rp18.000';
+            message = '<i class="fa-solid fa-check-circle"></i> <strong>Sempurna!</strong> Karyawan A menemukan harga nasi kotak per porsi adalah Rp17.500';
         } else {
             message = '<i class="fa-solid fa-circle-xmark"></i> Gradien benar, tapi persamaan akhirnya salah hitung.';
         }
@@ -643,21 +708,21 @@ async function checkAnswer(type) {
         feedback = document.getElementById('feedback5');
         let ansRaw = document.getElementById('jawab5').value;
         let ans = parseFloat(ansRaw.replace(',', '.')); 
-        if (Math.abs(ans - 1530) <= 0) {
+        if (Math.abs(ans - 1470) <= 0) {
             isCorrect = true;
-            message = '<i class="fa-solid fa-check-circle"></i> <strong>Benar!</strong> Biaya nasi kotak 85 porsi adalah Rp1.530.000.';
+            message = '<i class="fa-solid fa-check-circle"></i> <strong>Benar!</strong> Biaya nasi kotak 84 porsi adalah Rp1.470.000.';
         } else {
-            message = '<i class="fa-solid fa-circle-xmark"></i>  Salah. Substitusi nilai x = 85 pada persamaan final.';
+            message = '<i class="fa-solid fa-circle-xmark"></i>  Salah. Substitusi nilai x = 84 pada persamaan final.';
         }
     }
     else if (type === 6) { 
         feedback = document.getElementById('feedback6');
         let ansString = document.getElementById('jawab6').value;
         let ans = parseFloat(ansString.replace(',', '.'));
-        // 560.000 / 18.000 = 31.11... -> Maksimal 31 kotak
-        if (!isNaN(ans) && Math.abs(ans - 31) <= 0) {
+        // 580.000 / 17.500 = 33.14... -> Maksimal 33 kotak
+        if (!isNaN(ans) && Math.abs(ans - 33) <= 0) {
             isCorrect = true;
-            message = '<i class="fa-solid fa-check-circle"></i> <strong>Benar!</strong> Banyaknya maksimal nasi kotak yang dapat dibeli adalah 31 kotak.';
+            message = '<i class="fa-solid fa-check-circle"></i> <strong>Benar!</strong> Banyaknya maksimal nasi kotak yang dapat dibeli adalah 33 kotak.';
         } else {
             message = '<i class="fa-solid fa-circle-xmark"></i> Salah. Ingat, banyaknya nasi kotak tidak bisa dalam bentuk bilangan desimal.';
         }
@@ -670,8 +735,8 @@ async function checkAnswer(type) {
 async function checkCoordAnswer(point) {
     const feedback = document.getElementById('coordFeedback');
     let correctX, correctY, inputX, inputY;
-    if (point === 'A') { correctX = 20; correctY = 360; inputX = parseFloat(document.getElementById('coordAx').value); inputY = parseFloat(document.getElementById('coordAy').value); } 
-    else if (point === 'B') { correctX = 50; correctY = 900; inputX = parseFloat(document.getElementById('coordBx').value); inputY = parseFloat(document.getElementById('coordBy').value); } 
+    if (point === 'A') { correctX = 20; correctY = 350; inputX = parseFloat(document.getElementById('coordAx').value); inputY = parseFloat(document.getElementById('coordAy').value); } 
+    else if (point === 'B') { correctX = 40; correctY = 700; inputX = parseFloat(document.getElementById('coordBx').value); inputY = parseFloat(document.getElementById('coordBy').value); } 
     else return;
 
     if (isNaN(inputX) || isNaN(inputY)) {
@@ -695,9 +760,9 @@ async function checkGraphPoints() {
     const points = window.simpanTitik;
     const feedback = document.getElementById('graphFeedback');
     
-    // A(20, 360), B(50, 900)
-    const hasA = points.some(p => Math.abs(p.x - 20) <= 5 && Math.abs(p.y - 360) <= 5);
-    const hasB = points.some(p => Math.abs(p.x - 50) <= 5 && Math.abs(p.y - 900) <= 5);
+    // A(20, 350), B(40, 700)
+    const hasA = points.some(p => Math.abs(p.x - 20) <= 0 && Math.abs(p.y - 350) <= 0);
+    const hasB = points.some(p => Math.abs(p.x - 40) <= 0 && Math.abs(p.y - 700) <= 0);
 
  // KONDISI 1: SUDAH MENEMUKAN KEDUA TITIK (PAS)
     if (hasA && hasB) {
@@ -714,7 +779,7 @@ async function checkGraphPoints() {
     else if (hasA && !hasB) {
         feedback.innerHTML = `
             <i class="fa-solid fa-circle-exclamation"></i> <strong>Bagus! Titik A sudah pas.</strong><br>
-            Tapi <strong>Titik B</strong> (50, 900) belum ketemu. Cari lagi ya!
+            Tapi <strong>Titik B</strong> (40, 700) belum ketemu. Cari lagi ya!
         `;
         feedback.className = 'feedback wrong'; // Warna Merah (atau kuning jika diatur CSS)
         
@@ -725,7 +790,7 @@ async function checkGraphPoints() {
     else if (!hasA && hasB) {
         feedback.innerHTML = `
             <i class="fa-solid fa-circle-exclamation"></i> <strong>Bagus! Titik B sudah pas.</strong><br>
-            Tapi <strong>Titik A</strong> (20, 360) belum ketemu. Cari lagi ya!
+            Tapi <strong>Titik A</strong> (20, 350) belum ketemu. Cari lagi ya!
         `;
         feedback.className = 'feedback wrong';
         
@@ -765,7 +830,7 @@ function submitReason() {
 function checkFinalEquation() {
     const equation = document.getElementById('finalEquation').value.toLowerCase().replace(/\s/g, '').replace(/,/g, '.');
     const feedback = document.getElementById('finalFeedback');
-    if (equation === '18x' || equation === 'y=18x' || equation === '18x+0' || equation === 'y=18x+0') {
+    if (equation === '17.5x' || equation === 'y=17.5x' || equation === '17.5x+0' || equation === 'y=17.5x+0') {
         feedback.innerHTML = '<i class="fa-solid fa-check-circle"></i> <strong>Benar!</strong> Persamaan final telah dikonfirmasi.';
         feedback.className = 'feedback correct';
     } else {
@@ -883,7 +948,7 @@ async function confirmSubmission() {
     const sName = document.getElementById('nama-siswa').value || 'Tanpa Nama';
     let dataToSave = [];
 
-    const isEq = (v) => { if(!v) return false; const c = v.toLowerCase().replace(/\s/g,'').replace(/,/g, '.'); return c === '18x' || c === 'y=18x' || c === '18x+0' || c === 'y=18x+0'; };
+    const isEq = (v) => { if(!v) return false; const c = v.toLowerCase().replace(/\s/g,'').replace(/,/g, '.'); return c === '17.5x' || c === 'y=17.5x' || c === '17.5x+0' || c === 'y=17.5x+0'; };
     const pushData = (q, ans, corr) => dataToSave.push({ student_name: sName, question: q, answer: ans, is_correct: corr });
 
     // === VALIDASI SOAL UTAMA ===
@@ -891,9 +956,9 @@ async function confirmSubmission() {
     pushData('Metode Karyawan A', document.getElementById('jawab_metode2').value, isEq(document.getElementById('jawab_metode2').value));
     
     let v5 = parseFloat(document.getElementById('jawab5').value.replace(',','.'));
-    pushData('Biaya 85 Nasi Kotak', document.getElementById('jawab5').value, Math.abs(v5 - 1530) <= 0);
+    pushData('Biaya 84 Nasi Kotak', document.getElementById('jawab5').value, Math.abs(v5 - 1470) <= 0);
     let v6 = parseFloat(document.getElementById('jawab6').value.replace(',','.'));
-    pushData('Maksimal Nasi Kotak', document.getElementById('jawab6').value, Math.abs(v6 - 31) < 0.5);
+    pushData('Maksimal Nasi Kotak', document.getElementById('jawab6').value, Math.abs(v6 - 33) <= 0);
 
     // === VALIDASI BARU: 8 PERTANYAAN TAMBAHAN ===
     
@@ -903,17 +968,17 @@ async function confirmSubmission() {
     const coordBx = parseFloat(document.getElementById('coordBx').value);
     const coordBy = parseFloat(document.getElementById('coordBy').value);
     
-    pushData('Koordinat A', `(${coordAx}, ${coordAy})`, coordAx === 20 && coordAy === 360);
-    pushData('Koordinat B', `(${coordBx}, ${coordBy})`, coordBx === 50 && coordBy === 900);
+    pushData('Koordinat A', `(${coordAx}, ${coordAy})`, coordAx === 20 && coordAy === 350);
+    pushData('Koordinat B', `(${coordBx}, ${coordBy})`, coordBx === 40 && coordBy === 700);
     
     // 3. Gradien (Metode 2)
     let gVal = parseFloat(document.getElementById('jawab_gradien').value.replace(',','.'));
-    pushData('Gradien Karyawan A', document.getElementById('jawab_gradien').value, Math.abs(gVal - 18) < 0.1);
+    pushData('Gradien Karyawan A', document.getElementById('jawab_gradien').value, Math.abs(gVal - 17.5) < 0.1);
     
     // 4. Visualisasi Grafik Kartesius
     const points = window.simpanTitik || [];
-    const hasA = points.some(p => Math.abs(p.x - 20) <= 5 && Math.abs(p.y - 360) <= 5);
-    const hasB = points.some(p => Math.abs(p.x - 50) <= 5 && Math.abs(p.y - 900) <= 5);
+    const hasA = points.some(p => Math.abs(p.x - 20) <= 0 && Math.abs(p.y - 350) <= 0);
+    const hasB = points.some(p => Math.abs(p.x - 40) <= 0 && Math.abs(p.y - 700) <= 0);
     pushData('Visualisasi Grafik Kartesius', JSON.stringify(window.simpanTitik), hasA && hasB);
     
     // 5. Refleksi (Ya atau Tidak)
@@ -937,6 +1002,12 @@ async function confirmSubmission() {
     const kapanMetode = document.getElementById('devAnswer2').value;
     pushData('Pendapat Kelompok', kapanMetode, kapanMetode.length > 15);
 
+    // === FASE 2 (tidak divalidasi benar/salah) ===
+    const pilihanStrategi = document.querySelector('input[name="pilih-strategi"]:checked');
+    pushData('Pilihan Strategi', pilihanStrategi ? pilihanStrategi.value : '', false);
+    pushData('Alasan Strategi', document.getElementById('diskusi-alasan-strategi').value, false);
+    pushData('Identifikasi Variabel', document.getElementById('diskusi-variabel').value, false);
+
     // === DATA INFO (TIDAK DIVALIDASI) ===
     pushData('Kesimpulan Konsep', document.getElementById('kesimpulan1').value, document.getElementById('kesimpulan1').value.trim().length >= 20);
     pushData('Kesimpulan Kontekstual', document.getElementById('kesimpulan2').value, document.getElementById('kesimpulan2').value.trim().length >= 20);
@@ -947,7 +1018,7 @@ async function confirmSubmission() {
     if (linkPres && linkPres.value) pushData('Link Presentasi', linkPres.value, false);
 
     // 1. SIMPAN LOKAL DULU (PENTING! Agar Review Mode jalan 100%)
-    localStorage.removeItem('dataReviewSiswa');
+    localStorage.removeItem('dataReviewSiswa_Kel5');
     
     // Simpan nama siswa ke localStorage untuk review mode
     localStorage.setItem('nama-siswa', sName);
@@ -962,6 +1033,12 @@ async function confirmSubmission() {
     // 2. KIRIM DATABASE (Try-Catch agar kalau internet mati, lokal tetap aman)
     try {
         if (supabaseClient) {
+            // Hapus data lama dulu agar tidak dobel saat submit ulang
+            await supabaseClient
+                .from('student_answers')
+                .delete()
+                .eq('student_name', sName);
+
             const { error: insertError } = await supabaseClient.from('student_answers').insert(dataToSave);
             if (insertError) {
                 alert('Gagal menyimpan jawaban ke database: ' + insertError.message + '\nSilakan hubungi guru.');
@@ -1033,7 +1110,7 @@ window.addEventListener('load', async function() {
             const mapSoal = {
                 'Metode Karyawan B': 'jawab_metode1', 'Gradien Karyawan A': 'jawab_gradien', 'Metode Karyawan A': 'jawab_metode2',
                 'Kesimpulan': 'jawab_kesimpulan', 'Alasan Kesimpulan': 'reasonText', 'Persamaan Final': 'finalEquation',
-                'Biaya 85 Nasi Kotak': 'jawab5', 'Maksimal Nasi Kotak': 'jawab6',
+                'Biaya 84 Nasi Kotak': 'jawab5', 'Maksimal Nasi Kotak': 'jawab6',
                 'Info Kelompok': 'kelompok-siswa', 'Analisis Rumus': 'devAnswer1', 'Pendapat Kelompok': 'devAnswer2',
                 'Link Presentasi': 'link_presentasi'
             };

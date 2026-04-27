@@ -51,14 +51,14 @@
             </div>
         </header>
 
-        <section class="pbl-phase" id="phase-1">
+        <section class="pbl-phase" id="phase-1" style="border-left-color: #0077B6;">
             <div class="phase-badge">Fase 1: Orientasi Masalah</div>
             <h2><i class="fa-solid fa-water-ladder"></i> Pengisian Kolam Renang Baru</h2>
             <div class="scenario-box">
                 <p>Pak Hendra baru saja membangun kolam renang di rumahnya berkapasitas <strong>2.000 liter</strong>. Ia menggunakan selang untuk mengisinya dan mencatat volume air pada dua waktu berbeda.</p>
                 <ul style="list-style: none; padding: 0;">
-                    <li><i class="fa-solid fa-stopwatch"></i> <strong>Menit ke-10 :</strong> Volume air sudah mencapai <strong>150 liter</strong>.</li>
-                    <li><i class="fa-solid fa-stopwatch"></i> <strong>Menit ke-30 :</strong> Volume air sudah mencapai <strong>450 liter</strong>.</li>
+                    <li><i class="fa-solid fa-stopwatch"></i> <strong>Menit ke-10 :</strong> Volume air sudah mencapai <strong>160 liter</strong>.</li>
+                    <li><i class="fa-solid fa-stopwatch"></i> <strong>Menit ke-30 :</strong> Volume air sudah mencapai <strong>480 liter</strong>.</li>
                 </ul>
                 <p><strong>Diketahui informasi Grafik pengisian kolam:</strong></p>
                 <ul style="margin: 5px 0 0 20px;">
@@ -92,13 +92,13 @@
             </div>
         </section>
 
-        <section class="pbl-phase chart-section">
+        <section class="pbl-phase chart-section" style="border-left-color: #0077B6;">
             <h2><i class="fa-solid fa-chart-line"></i> Visualisasi Grafik Kartesius</h2>
             <div style="background: #e0f7fa; padding: 15px; border-radius: 8px; border-left: 5px solid #00B4D8; margin-bottom: 15px;">
                 <strong>Instruksi:</strong>
                 <ul style="margin: 5px 0 0 20px;">
                     <li>Klik area grafik di bawah untuk membuat <strong>Titik A </strong> dan <strong>Titik B </strong>.</li>
-                    <li>Gunakan <strong>Scroll Bar</strong> (di samping dan bawah grafik) untuk mencari posisi angka yang pas.</li>
+                    <li>Pastikan koordinat titik yang dibuat sesuai dengan data yang diberikan.</li>
                 </ul>
             </div>
             <div class="chart-container">
@@ -116,8 +116,47 @@
             </div>
         </section>
 
-        <section class="pbl-phase" id="phase-3">
-            <div class="phase-badge">Fase 2: Penyelidikan</div>
+        <section class="pbl-phase" id="phase-2" style="border-left-color: #0077B6;">
+            <div class="phase-badge">Fase 2: Mari Berdiskusi &amp; Bagi Tugas</div>
+            <h2><i class="fa-solid fa-users"></i> Rencana Pemecahan Masalah</h2>
+            <p>Sebelum mulai menghitung, diskusikan dulu siapa yang akan bertugas dan data mana yang akan kalian pilih!</p>
+            <div style="position: relative; padding-left: 52px; margin-top: 20px;">
+                <div style="position: absolute; left: 19px; top: 16px; bottom: 16px; width: 3px; background: linear-gradient(180deg, #0077B6, #00B4D8); border-radius: 3px;"></div>
+                <div style="position: relative; margin-bottom: 28px;">
+                    <div style="position: absolute; left: -52px; top: 0; width: 40px; height: 40px; background: linear-gradient(135deg, #0077B6, #00B4D8); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 3px 10px rgba(0,119,182,0.4);">
+                        <i class="fa-solid fa-lightbulb" style="color: white; font-size: 0.95rem;"></i>
+                    </div>
+                    <div style="background: white; border: 1px solid #90cfe8; border-radius: 12px; padding: 18px 20px; box-shadow: 0 2px 8px rgba(0,119,182,0.08);">
+                        <p style="margin: 0 0 8px 0; font-weight: 600; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; color: #0077B6;">Langkah 1</p>
+                        <p class="q-text" style="margin: 0 0 16px 0; font-weight: 600;">Menurut kelompok kalian, strategi mana yang lebih mudah dilakukan? Jelaskan alasannya!</p>
+                        <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px;">
+                            <label style="display: flex; align-items: center; gap: 12px; cursor: pointer; padding: 12px 16px; border: 2px solid #90cfe8; border-radius: 10px; background: #f0f8ff;">
+                                <input type="radio" id="pilih-metode-2titik" name="pilih-strategi" value="metode_2titik" style="accent-color: #0077B6; width: 18px; height: 18px; flex-shrink: 0;">
+                                <span style="font-size: 0.95rem;">📐 Metode Raka (2 Titik)</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 12px; cursor: pointer; padding: 12px 16px; border: 2px solid #90cfe8; border-radius: 10px; background: #f0f8ff;">
+                                <input type="radio" id="pilih-metode-gradien" name="pilih-strategi" value="metode_gradien" style="accent-color: #0077B6; width: 18px; height: 18px; flex-shrink: 0;">
+                                <span style="font-size: 0.95rem;">📈 Metode Sinta (Gradien)</span>
+                            </label>
+                        </div>
+                        <textarea id="diskusi-alasan-strategi" rows="3" placeholder="Tuliskan alasan kelompokmu di sini..." style="width: 100%; padding: 10px; border: 1.5px solid #90cfe8; border-radius: 8px; font-size: 0.95rem; resize: vertical; box-sizing: border-box; background: #f0f8ff; outline: none;"></textarea>
+                    </div>
+                </div>
+                <div style="position: relative; margin-bottom: 8px;">
+                    <div style="position: absolute; left: -52px; top: 0; width: 40px; height: 40px; background: linear-gradient(135deg, #0077B6, #00B4D8); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 3px 10px rgba(0,119,182,0.4);">
+                        <i class="fa-solid fa-magnifying-glass" style="color: white; font-size: 0.95rem;"></i>
+                    </div>
+                    <div style="background: white; border: 1px solid #90cfe8; border-radius: 12px; padding: 18px 20px; box-shadow: 0 2px 8px rgba(0,119,182,0.08);">
+                        <p style="margin: 0 0 4px 0; font-weight: 600; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; color: #0077B6;">Langkah 2</p>
+                        <p class="q-text" style="margin: 0 0 12px 0;">Tuliskan identifikasi variabel \( x \) dan \( y \) kelompokmu beserta alasannya:</p>
+                        <textarea id="diskusi-variabel" rows="4" placeholder="Tuliskan di sini..." style="width: 100%; padding: 10px; border: 1.5px solid #90cfe8; border-radius: 8px; font-size: 0.95rem; resize: vertical; box-sizing: border-box; background: #f0f8ff; outline: none;"></textarea>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="pbl-phase" id="phase-3" style="border-left-color: #0077B6;">
+            <div class="phase-badge">Fase 3: Penyelidikan Masalah Kelompok</div>
             <h2><i class="fa-solid fa-calculator"></i> Duel Metode</h2>
             <p>Mari kita hitung persamaannya.</p>
             <div class="formula-container">
@@ -216,8 +255,8 @@
             </div>
         </section>
 
-        <section class="pbl-phase" id="phase-development">
-            <div class="phase-badge">Fase 3: Pengembangan</div>
+        <section class="pbl-phase" id="phase-development" style="border-left-color: #0077B6;">
+            <div class="phase-badge">Analisa Rumus</div>
             <h2><i class="fa-solid fa-comments"></i> Diskusi & Analisis</h2>
             <div class="question-card">
                 <h3>1. Analisis Rumus</h3>
@@ -247,7 +286,7 @@
             </div>
         </section>
 
-        <section class="pbl-phase" id="phase-5">
+        <section class="pbl-phase" id="phase-5" style="border-left-color: #0077B6;">
             <div class="phase-badge">Uji Coba</div>
             <h2><i class="fa-solid fa-calculator"></i> Cek Kebenaran</h2>
             <div class="question-card">
@@ -260,7 +299,7 @@
                 <div id="feedback5" class="feedback"></div>
             </div>
             <div class="question-card">
-                <p class="q-text">Berapa menit yang dibutuhkan hingga kolam penuh (<strong>2.000 liter</strong>)? (Tulislah satu angka saja pada belakang desimal)</p>
+                <p class="q-text">Berapa menit yang dibutuhkan hingga kolam penuh (<strong>2.000 liter</strong>)?</p>
                 <div class="answer-area">
                     <input type="number" id="jawab6" placeholder="Angka saja..." style="width: 100px;">
                     <span> menit</span>
@@ -270,7 +309,7 @@
             </div>
         </section>
 
-        <section class="pbl-phase" id="phase-4">
+        <section class="pbl-phase" id="phase-4" style="border-left-color: #0077B6;">
             <div class="phase-badge">Fase 4: Menyajikan Hasil Karya</div>
             <h2><i class="fa-solid fa-person-chalkboard"></i> Presentasi</h2>
             <div class="scenario-box" style="background: #e0f7fa; border-color: #00B4D8;">
@@ -297,7 +336,7 @@
         </div>
 
         
-        <section class="pbl-phase" id="phase-5">
+        <section class="pbl-phase" id="phase-5" style="border-left-color: #0077B6;">
             <div class="phase-badge">Fase 5: Kesimpulan</div>
             <div class="question-block">
                 <div class="q-header" style="display:flex; align-items:flex-start; gap:14px;">

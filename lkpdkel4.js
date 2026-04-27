@@ -15,11 +15,67 @@ try {
 // [PENTING] Variabel Global untuk menyimpan data titik (Sama seperti Kel 5)
 window.simpanTitik = [];
 
+// Fungsi untuk menyimpan input ke localStorage
+function saveInputValue(id) {
+    const element = document.getElementById(id);
+    if (element) localStorage.setItem(id, element.value);
+}
+
+// Fungsi untuk memuat input dari localStorage
+function loadInputValue(id) {
+    const value = localStorage.getItem(id);
+    const element = document.getElementById(id);
+    if (element && value !== null) element.value = value;
+}
+
+function initDateTime() {
+    const now = new Date();
+    const tanggalEl = document.getElementById('tanggal');
+    if (tanggalEl) tanggalEl.textContent = now.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+}
+
 // =========================================
 // 2. MAIN LOGIC (CHART & REVIEW MODE)
 // =========================================
 
 document.addEventListener('DOMContentLoaded', function() {
+    // --- DAFTAR ID YANG HARUS DISIMPAN OTOMATIS ---
+    const inputIds = [
+        'kelompok-siswa', 'nama-siswa',
+        'diskusi-alasan-strategi', 'diskusi-variabel',
+        'coordAx', 'coordAy', 'coordBx', 'coordBy',
+        'jawab_metode1', 'jawab_gradien', 'jawab_metode2',
+        'jawab_kesimpulan',
+        'jawab5', 'jawab6',
+        'devAnswer1', 'devAnswer2',
+        'kesimpulan1', 'kesimpulan2'
+    ];
+    inputIds.forEach(id => loadInputValue(id));
+
+    // Load radio button pilihan strategi
+    const savedStrategi = localStorage.getItem('pilih-strategi');
+    if (savedStrategi) {
+        const radioEl = document.querySelector(`input[name="pilih-strategi"][value="${savedStrategi}"]`);
+        if (radioEl) radioEl.checked = true;
+    }
+
+    inputIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener('input', () => saveInputValue(id));
+            el.addEventListener('change', () => saveInputValue(id));
+        }
+    });
+
+    // Simpan otomatis radio button pilihan strategi
+    document.querySelectorAll('input[name="pilih-strategi"]').forEach(radio => {
+        radio.addEventListener('change', () => {
+            localStorage.setItem('pilih-strategi', radio.value);
+        });
+    });
+
+    initDateTime();
+
     
     // 1. TAMPILAN KELOMPOK
     const elSelect = document.getElementById('kelompok-siswa');
@@ -83,8 +139,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     if(feedback) feedback.innerHTML = ''; 
                 },
                 scales: {
-                    x: { type: 'linear', position: 'bottom', title: { display: true, text: 'Waktu (Hari)', font: {weight:'bold'} }, min: 0, max: 30, ticks: { stepSize: 2 } },
-                    y: { title: { display: true, text: 'Tinggi tanaman (cm)', font: {weight:'bold'} }, min: 0, max: 50, ticks: { stepSize: 5 } }
+                    x: { type: 'linear', position: 'bottom', title: { display: true, text: 'Waktu (Hari)', font: {weight:'bold'} }, min: 0, max: 15, ticks: { stepSize: 1 } },
+                    y: { title: { display: true, text: 'Tinggi tanaman (cm)', font: {weight:'bold'} }, min: 0, max: 26, ticks: { stepSize: 2 } }
                 },
                 plugins: {
                     legend: { display: false },
@@ -425,6 +481,9 @@ function isiFormulirOtomatis(data) {
     if (dataSiswa) document.getElementById('nama-siswa').value = dataSiswa.student_name;
 
     const mapSoal = {
+        'Pilihan Strategi': null, // ditangani khusus (radio button)
+        'Alasan Strategi': 'diskusi-alasan-strategi',
+        'Identifikasi Variabel': 'diskusi-variabel',
         'Metode Edo': 'jawab_metode1',
         'Gradien Siti': 'jawab_gradien',
         'Metode Siti': 'jawab_metode2',
@@ -440,6 +499,13 @@ function isiFormulirOtomatis(data) {
     };
 
     data.forEach(item => {
+        // Restore radio button pilihan strategi
+        if (item.question === 'Pilihan Strategi') {
+            const radioEl = document.querySelector(`input[name="pilih-strategi"][value="${item.answer}"]`);
+            if (radioEl) radioEl.checked = true;
+            return;
+        }
+
         // Restore Grafik dari window.simpanTitik jika ada
         if (item.question === 'Visualisasi Grafik Kartesius') {
             try { 
@@ -569,12 +635,12 @@ function savePresentation() {
     }
 }
 
-// Logic Cek Jawaban (Catering: y = 2.5x-3)
+// Logic Cek Jawaban (Catering: y = 2.4x-1.6)
 async function checkAnswer(type) {
     let feedback, message; 
     let isCorrect = false;
-    const KUNCI_M = 2.5;
-    const VALID_ANSWERS = ["2.5x-3", "y=2.5x-3", "2,5x-3", "y=2,5x-3"];
+    const KUNCI_M = 2.4;
+    const VALID_ANSWERS = ["2.4x-1.6", "y=2.4x-1.6", "2,4x-1.6", "y=2,4x-1.6"];
 
     if (type === 'metode1') { 
         feedback = document.getElementById('feedback_metode1');
@@ -586,7 +652,7 @@ async function checkAnswer(type) {
         let ans = rawInput.replace(/\s/g, '');
         if (VALID_ANSWERS.some(kunci => { const k = kunci.replace("y=",""); return ans === k || ans === "y="+k; })) {
             isCorrect = true;
-            message = '<i class="fa-solid fa-check-circle"></i> <strong>Benar!</strong> Rumus akhirnya adalah <strong>y = 2.5x - 3 </strong> (atau 2,5x - 3).';
+            message = '<i class="fa-solid fa-check-circle"></i> <strong>Benar!</strong> Rumus akhirnya adalah <strong>y = 2.4x - 1.6 </strong> (atau 2,4x - 1.6).';
         } else {
             message = '<i class="fa-solid fa-circle-xmark"></i> Kurang tepat. Cek lagi operasi pada persamaannya!';
         }
@@ -607,7 +673,7 @@ async function checkAnswer(type) {
         }
         if (VALID_ANSWERS.some(kunci => { const k = kunci.replace("y=",""); return rawInput === k || rawInput === "y="+k; })) {
             isCorrect = true;
-            message = '<i class="fa-solid fa-check-circle"></i> <strong>Sempurna!</strong> Siti menemukan laju pertumbuhan tanaman kacang hijau adalah 2.5 cm/hari.';
+            message = '<i class="fa-solid fa-check-circle"></i> <strong>Sempurna!</strong> Siti menemukan laju pertumbuhan tanaman kacang hijau adalah 2.4 cm/hari.';
         } else {
             message = '<i class="fa-solid fa-circle-xmark"></i> Gradien benar, tapi persamaan akhirnya salah hitung.';
         }
@@ -647,10 +713,10 @@ async function checkAnswer(type) {
         let ansString = document.getElementById('jawab6').value; // Ambil teks asli
         let ans = parseFloat(ansString.replace(',', '.'));      // Ubah ke angka
 
-        // Hitungan: 47 = 2.5x - 3  ->  2.5x = 50  ->  x = 50 / 2.5 = 20
-        if (!isNaN(ans) && Math.abs(ans - 20) <= 0) {
+        // Hitungan: 47 = 2.4x - 1.6  ->  2.4x = 48.6  ->  x = 48.6 / 2.4 = 20.25
+        if (!isNaN(ans) && Math.abs(ans - 20.25) <= 0) {
             isCorrect = true;
-            message = '<i class="fa-solid fa-check-circle"></i> <strong>Benar!</strong> Waktu yang dibutuhkan agar tanaman mencapai tinggi 47 cm adalah 20 hari.';
+            message = '<i class="fa-solid fa-check-circle"></i> <strong>Benar!</strong> Waktu yang dibutuhkan agar tanaman mencapai tinggi 47 cm adalah 20.25 hari.';
         } else {
             message = '<i class="fa-solid fa-circle-xmark"></i> Salah. Substitusi nilai y = 47 pada persamaan finalmu.';
         }
@@ -663,8 +729,8 @@ async function checkAnswer(type) {
 async function checkCoordAnswer(point) {
     const feedback = document.getElementById('coordFeedback');
     let correctX, correctY, inputX, inputY;
-    if (point === 'A') { correctX = 4; correctY = 7; inputX = parseFloat(document.getElementById('coordAx').value); inputY = parseFloat(document.getElementById('coordAy').value); } 
-    else if (point === 'B') { correctX = 10; correctY = 22; inputX = parseFloat(document.getElementById('coordBx').value); inputY = parseFloat(document.getElementById('coordBy').value); } 
+    if (point === 'A') { correctX = 4; correctY = 8; inputX = parseFloat(document.getElementById('coordAx').value); inputY = parseFloat(document.getElementById('coordAy').value); } 
+    else if (point === 'B') { correctX = 9; correctY = 20; inputX = parseFloat(document.getElementById('coordBx').value); inputY = parseFloat(document.getElementById('coordBy').value); } 
     else return;
 
     if (isNaN(inputX) || isNaN(inputY)) {
@@ -688,9 +754,9 @@ async function checkGraphPoints() {
     const points = window.simpanTitik;
     const feedback = document.getElementById('graphFeedback');
     
-    // A(4, 7), B(10, 22)
-    const hasA = points.some(p => Math.abs(p.x - 4) <= 0 && Math.abs(p.y - 7) <= 0);
-    const hasB = points.some(p => Math.abs(p.x - 10) <= 0 && Math.abs(p.y - 22) <= 0);
+    // A(4, 8), B(9, 20)
+    const hasA = points.some(p => Math.abs(p.x - 4) <= 0 && Math.abs(p.y - 8) <= 0);
+    const hasB = points.some(p => Math.abs(p.x - 9) <= 0 && Math.abs(p.y - 20) <= 0);
 
  // KONDISI 1: SUDAH MENEMUKAN KEDUA TITIK (PAS)
     if (hasA && hasB) {
@@ -707,7 +773,7 @@ async function checkGraphPoints() {
     else if (hasA && !hasB) {
         feedback.innerHTML = `
             <i class="fa-solid fa-circle-exclamation"></i> <strong>Bagus! Titik A sudah pas.</strong><br>
-            Tapi <strong>Titik B</strong> (10, 22) belum ketemu. Cari lagi ya!
+            Tapi <strong>Titik B</strong> (9, 20) belum ketemu. Cari lagi ya!
         `;
         feedback.className = 'feedback wrong'; // Warna Merah (atau kuning jika diatur CSS)
         
@@ -718,7 +784,7 @@ async function checkGraphPoints() {
     else if (!hasA && hasB) {
         feedback.innerHTML = `
             <i class="fa-solid fa-circle-exclamation"></i> <strong>Bagus! Titik B sudah pas.</strong><br>
-            Tapi <strong>Titik A</strong> (4, 7) belum ketemu. Cari lagi ya!
+            Tapi <strong>Titik A</strong> (4, 8) belum ketemu. Cari lagi ya!
         `;
         feedback.className = 'feedback wrong';
         
@@ -758,7 +824,7 @@ function submitReason() {
 function checkFinalEquation() {
     const equation = document.getElementById('finalEquation').value.toLowerCase().replace(/\s/g, '').replace(/,/g, '.');
     const feedback = document.getElementById('finalFeedback');
-    if (equation === '2.5x-3' || equation === 'y=2.5x-3' || equation === '2.5x-3' || equation === 'y=2.5x-3') {
+    if (equation === '2.4x-1.6' || equation === 'y=2.4x-1.6' || equation === '2.4x-1.6' || equation === 'y=2.4x-1.6') {
         feedback.innerHTML = '<i class="fa-solid fa-check-circle"></i> <strong>Benar!</strong> Persamaan final telah dikonfirmasi.';
         feedback.className = 'feedback correct';
     } else {
@@ -865,7 +931,7 @@ async function confirmSubmission() {
     const sName = document.getElementById('nama-siswa').value || 'Tanpa Nama';
     let dataToSave = [];
 
-    const isEq = (v) => { if(!v) return false; const c = v.toLowerCase().replace(/\s/g,'').replace(/,/g, '.'); return c === '2.5x-3' || c === 'y=2.5x-3' || c === '2.5x-3' || c === 'y=2.5x-3'; };
+    const isEq = (v) => { if(!v) return false; const c = v.toLowerCase().replace(/\s/g,'').replace(/,/g, '.'); return c === '2.4x-1.6' || c === 'y=2.4x-1.6' || c === '2.4x-1.6' || c === 'y=2.4x-1.6'; };
     const pushData = (q, ans, corr) => dataToSave.push({ student_name: sName, question: q, answer: ans, is_correct: corr });
 
     // === VALIDASI SOAL UTAMA ===
@@ -878,13 +944,13 @@ async function confirmSubmission() {
     const j5 = document.getElementById('jawab5');
     if(j5) {
         let val5 = parseFloat(j5.value.replace(',', '.'));
-        pushData('Menanam 2 Minggu', j5.value, Math.abs(val5 - 32) < 1);
+        pushData('Menanam 2 Minggu', j5.value, Math.abs(val5 - 32) <= 0);
     }
 
     const j6 = document.getElementById('jawab6'); 
     if(j6) {
         let val6 = parseFloat(j6.value.replace(',', '.'));
-        pushData('Waktu Tanaman Mencapai Tinggi', j6.value, Math.abs(val6 - 20) < 1);
+        pushData('Waktu Tanaman Mencapai Tinggi', j6.value, Math.abs(val6 - 20.25) <= 0);
     }
 
     // === VALIDASI BARU: 8 PERTANYAAN TAMBAHAN ===
@@ -895,20 +961,20 @@ async function confirmSubmission() {
     const coordBx = parseFloat(document.getElementById('coordBx').value);
     const coordBy = parseFloat(document.getElementById('coordBy').value);
     
-    pushData('Koordinat A', `(${coordAx}, ${coordAy})`, coordAx === 4 && coordAy === 7);
-    pushData('Koordinat B', `(${coordBx}, ${coordBy})`, coordBx === 10 && coordBy === 22);
+    pushData('Koordinat A', `(${coordAx}, ${coordAy})`, coordAx === 4 && coordAy === 8);
+    pushData('Koordinat B', `(${coordBx}, ${coordBy})`, coordBx === 9 && coordBy === 20);
     
     // 3. Gradien (Metode 2)
     const grad = document.getElementById('jawab_gradien');
     if(grad) {
         const val = parseFloat(grad.value.replace(',', '.'));
-        pushData('Gradien Siti', grad.value, Math.abs(val - 2.5) < 0.01);
+        pushData('Gradien Siti', grad.value, Math.abs(val - 2.4) < 0.01);
     }
     
     // 4. Visualisasi Grafik Kartesius
     const points = window.simpanTitik || [];
-    const hasA = points.some(p => Math.abs(p.x - 4) <= 0 && Math.abs(p.y - 7) <= 0);
-    const hasB = points.some(p => Math.abs(p.x - 10) <= 0 && Math.abs(p.y - 22) <= 0);
+    const hasA = points.some(p => Math.abs(p.x - 4) <= 0 && Math.abs(p.y - 8) <= 0);
+    const hasB = points.some(p => Math.abs(p.x - 9) <= 0 && Math.abs(p.y - 20) <= 0);
     pushData('Visualisasi Grafik Kartesius', JSON.stringify(window.simpanTitik), hasA && hasB);
     
     // 5. Refleksi (Ya atau Tidak)
@@ -933,6 +999,12 @@ async function confirmSubmission() {
     const dev2 = document.getElementById('devAnswer2');
     if(dev2) pushData('Pendapat Kelompok', dev2.value, dev2.value.length > 15);
 
+    // === FASE 2 (tidak divalidasi benar/salah) ===
+    const pilihanStrategi = document.querySelector('input[name="pilih-strategi"]:checked');
+    pushData('Pilihan Strategi', pilihanStrategi ? pilihanStrategi.value : '', false);
+    pushData('Alasan Strategi', document.getElementById('diskusi-alasan-strategi').value, false);
+    pushData('Identifikasi Variabel', document.getElementById('diskusi-variabel').value, false);
+
     // === DATA INFO (TIDAK DIVALIDASI) ===
     const kel = document.getElementById('kelompok-siswa');
     pushData('Kesimpulan Konsep', document.getElementById('kesimpulan1').value, document.getElementById('kesimpulan1').value.trim().length >= 20);
@@ -945,6 +1017,12 @@ async function confirmSubmission() {
 
     // KIRIM KE SUPABASE
     if (supabaseClient) {
+            // Hapus data lama dulu agar tidak dobel saat submit ulang
+            await supabaseClient
+                .from('student_answers')
+                .delete()
+                .eq('student_name', sName);
+
         const { error: insertError } = await supabaseClient.from('student_answers').insert(dataToSave);
         if (insertError) {
             alert('Gagal menyimpan jawaban ke database: ' + insertError.message + '\nSilakan hubungi guru.');
@@ -954,7 +1032,7 @@ async function confirmSubmission() {
     }
     
     // Simpan Lokal
-    localStorage.removeItem('dataReviewSiswa');
+    localStorage.removeItem('dataReviewSiswa_Kel4');
     
     // Simpan nama siswa ke localStorage untuk review mode
     localStorage.setItem('nama-siswa', sName);
@@ -1152,7 +1230,7 @@ function tampilkanStatusJawaban(data) {
                     <div>
                         <div class="review-score-number" style="color: ${warnaPanel};">${totalBenar} / ${totalSoal}</div>
                         <div class="review-score-label">Jawaban Benar</div>
-                        <div class="review-score-badge" style="background: ${warnaPanel}22; color: ${warnaPanel};">${predikat}</div>
+                        <div class="review-score-badge" style="background: ${warnaPanel}20; color: ${warnaPanel};">${predikat}</div>
                     </div>
                 </div>
             </div>

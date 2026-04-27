@@ -76,6 +76,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // 1. DAFTAR ID YANG HARUS DISIMPAN OTOMATIS
     const inputIds = [
         'kelompok-siswa', 'nama-siswa',
+        'diskusi-alasan-strategi', 'diskusi-variabel',
         'coordAx', 'coordAy', 'coordBx', 'coordBy',
         'jawab_metode1', 'jawab_gradien', 'jawab_metode2',
         'jawab_kesimpulan',
@@ -83,7 +84,30 @@ document.addEventListener('DOMContentLoaded', function() {
         'devAnswer1', 'devAnswer2',
         'kesimpulan1', 'kesimpulan2'
     ];
-    
+    inputIds.forEach(id => loadInputValue(id));
+
+    // Load radio button pilihan strategi
+    const savedStrategi = localStorage.getItem('pilih-strategi');
+    if (savedStrategi) {
+        const radioEl = document.querySelector(`input[name="pilih-strategi"][value="${savedStrategi}"]`);
+        if (radioEl) radioEl.checked = true;
+    }
+
+    inputIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener('input', () => saveInputValue(id));
+            el.addEventListener('change', () => saveInputValue(id));
+        }
+    });
+
+    // Simpan otomatis radio button pilihan strategi
+    document.querySelectorAll('input[name="pilih-strategi"]').forEach(radio => {
+        radio.addEventListener('change', () => {
+            localStorage.setItem('pilih-strategi', radio.value);
+        });
+    });
+
     // 3. MODIFIKASI TAMPILAN KELOMPOK (KUNCI PILIHAN)
     const elSelect = document.getElementById('kelompok-siswa');
     if (elSelect) {
@@ -140,7 +164,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     const canvasPosition = Chart.helpers.getRelativePosition(e, activeChart);
                     const xVal = Math.round(activeChart.scales.x.getValueForPixel(canvasPosition.x));
                     // Pembulatan 1 desimal untuk Y (Liter)
-                    const yVal = Math.round(activeChart.scales.y.getValueForPixel(canvasPosition.y) * 10) / 10;
+                    const yVal = Math.round(activeChart.scales.y.getValueForPixel(canvasPosition.y));
                     
                     window.simpanTitik.push({ x: xVal, y: yVal });
                     
@@ -320,11 +344,11 @@ async function checkAnswer(type) {
     let feedback, message; 
     let isCorrect = false; // Default status jawaban adalah Salah
 
-    // KUNCI JAWABAN (A(80, 39), B(150, 34.1)) -> m = -0.07, c = 44.6
-    const KUNCI_M = -0.07;
+    // KUNCI JAWABAN (A(80, 39), B(160, 34)) -> m = -0.0625, c = 44
+    const KUNCI_M = -0.0625;
     const VALID_ANSWERS = [
-        "-0.07x+44.6", "y=-0.07x+44.6", 
-        "-0,07x+44,6", "y=-0,07x+44,6"
+        "-0.0625x+44", "y=-0.0625x+44", 
+        "-0,0625x+44", "y=-0,0625x+44"
     ];
 
     // --- METODE BU RINA ---
@@ -340,7 +364,7 @@ async function checkAnswer(type) {
         let ans = rawInput.replace(/\s/g, '');
         if (VALID_ANSWERS.some(kunci => { const k = kunci.replace("y=",""); return ans === k || ans === "y="+k; })) {
             isCorrect = true;
-            message = '<i class="fa-solid fa-check-circle"></i> <strong>Benar!</strong> Rumus akhirnya adalah <strong>y = -0.07x + 44.6</strong> (atau -0,07x + 44,6).';
+            message = '<i class="fa-solid fa-check-circle"></i> <strong>Benar!</strong> Rumus akhirnya adalah <strong>y = -0.0625x + 44</strong> (atau -0,0625x + 44).';
         } else {
             message = '<i class="fa-solid fa-circle-xmark"></i> Kurang tepat. Cek lagi operasi pada persamaannya.';
         }
@@ -366,7 +390,7 @@ async function checkAnswer(type) {
 
         if (VALID_ANSWERS.some(kunci => { const k = kunci.replace("y=",""); return ans === k || ans === "y="+k; })) {
             isCorrect = true;
-            message = '<i class="fa-solid fa-check-circle"></i> <strong>Sempurna!</strong> Pak Budi menemukan konsumsi bensin 0.07 liter/km dan volume bensin sebelum jalan adalah 44.6 liter.';
+            message = '<i class="fa-solid fa-check-circle"></i> <strong>Sempurna!</strong> Pak Budi menemukan konsumsi bensin 0.0625 liter/km dan volume bensin sebelum jalan adalah 44 liter.';
         } else {
             message = '<i class="fa-solid fa-circle-xmark"></i> Gradien benar, tapi persamaan akhirnya salah hitung.';
         }
@@ -397,9 +421,9 @@ async function checkAnswer(type) {
         let ansRaw = document.getElementById('jawab5').value;
         let ans = parseFloat(ansRaw.replace(',', '.')); 
 
-        if (Math.abs(ans - 23.6) <= 0) {
+        if (Math.abs(ans - 25.25) <= 0) {
             isCorrect = true;
-            message = '<i class="fa-solid fa-check-circle"></i> <strong>Benar!</strong> Sisa bensin setelah menempuh 300 km adalah 23.6 liter.';
+            message = '<i class="fa-solid fa-check-circle"></i> <strong>Benar!</strong> Sisa bensin setelah menempuh 300 km adalah 25.25 liter.';
         } else {
             message = '<i class="fa-solid fa-circle-xmark"></i> Salah. Substitusi nilai x = 300 pada persamaan final.';
         }
@@ -410,11 +434,11 @@ async function checkAnswer(type) {
         let ansString = document.getElementById('jawab6').value; // Ambil teks asli
         let ans = parseFloat(ansString.replace(',', '.'));      // Ubah ke angka
 
-        // Hitungan: 0 = -0.07x + 44.6  ->  0.07x = 44.6  ->  x = 44.6 / 0.07 = 637.14
-        // Kita beri toleransi +/- 1 km (jadi jawab 637 atau 637.1 dianggap benar)
-        if (!isNaN(ans) && Math.abs(ans - 637.1) <= 0) {
+        // Hitungan: 0 = -0.0625x + 44  ->  0.0625x = 44  ->  x = 44 / 0.0625 = 704
+        // Kita beri toleransi +/- 1 km (jadi jawab 637 atau 704 dianggap benar)
+        if (!isNaN(ans) && Math.abs(ans - 704) <= 0) {
             isCorrect = true;
-            message = '<i class="fa-solid fa-check-circle"></i> <strong>Benar!</strong> Jarak tempuh mobil ketika bensin habis adalah sekitar 637.1 km.';
+            message = '<i class="fa-solid fa-check-circle"></i> <strong>Benar!</strong> Jarak tempuh mobil ketika bensin habis adalah 704 km.';
         } else {
             message = '<i class="fa-solid fa-circle-xmark"></i> Salah. Substitusi nilai y = 0 (bensin habis) pada persamaan finalmu.';
         }
@@ -440,7 +464,7 @@ async function checkCoordAnswer(point) {
         inputX = parseFloat(document.getElementById('coordAx').value);
         inputY = parseFloat(document.getElementById('coordAy').value);
     } else if (point === 'B') {
-        correctX = 150; correctY = 34.1;
+        correctX = 160; correctY = 34;
         inputX = parseFloat(document.getElementById('coordBx').value);
         inputY = parseFloat(document.getElementById('coordBy').value);
     } else { return; }
@@ -474,9 +498,9 @@ async function checkGraphPoints() {
 
     // Target Koordinat Kelompok 1
     // Titik A: (80, 39)
-    // Titik B: (150, 34.1)
+    // Titik B: (160, 34)
     const hasA = points.some(p => Math.abs(p.x - 80) <= 0 && Math.abs(p.y - 39) <= 0);
-    const hasB = points.some(p => Math.abs(p.x - 150) <= 0 && Math.abs(p.y - 34.1) <= 0);
+    const hasB = points.some(p => Math.abs(p.x - 160) <= 0 && Math.abs(p.y - 34) <= 0);
 
     // KONDISI 1: SUDAH MENEMUKAN KEDUA TITIK (PAS)
     if (hasA && hasB) {
@@ -493,7 +517,7 @@ async function checkGraphPoints() {
     else if (hasA && !hasB) {
         feedback.innerHTML = `
             <i class="fa-solid fa-circle-exclamation"></i> <strong>Bagus! Titik A sudah pas.</strong><br>
-            Tapi <strong>Titik B</strong> (150, 34.1) belum ketemu. Cari lagi ya!
+            Tapi <strong>Titik B</strong> (160, 34) belum ketemu. Cari lagi ya!
         `;
         feedback.className = 'feedback wrong'; // Warna Merah (atau kuning jika diatur CSS)
         
@@ -546,11 +570,11 @@ function checkFinalEquation() {
     const feedback = document.getElementById('finalFeedback');
     
     const validEquations = [
-        "-0.07x+44.6", "y=-0.07x+44.6",
-        "-0,07x+44,6", "y=-0,07x+44,6"
+        "-0.0625x+44",
+        "-0,0625x+44", 
     ];
 
-    if (equation === '-0.07x+44.6' || equation === 'y=-0.07x+44.6' || equation === '-0.07x+44.6' || equation === 'y=-0.07x+44.6') {
+    if (equation === '-0.0625x+44' || equation === 'y=-0.0625x+44' || equation === '-0.0625x+44' || equation === 'y=-0.0625x+44') {
         feedback.innerHTML = '<i class="fa-solid fa-check-circle"></i> <strong>Benar!</strong> Persamaan final telah dikonfirmasi.';
         feedback.className = 'feedback correct';
     } else {
@@ -621,7 +645,7 @@ function checkCompletion() {
     if (window.myChart) {
         const points = window.myChart.data.datasets[0].data;
         const hasA = points.some(p => Math.abs(p.x - 80) <= 0 && Math.abs(p.y - 39) <= 0);
-        const hasB = points.some(p => Math.abs(p.x - 150) <= 0 && Math.abs(p.y - 34.1) <= 0);
+        const hasB = points.some(p => Math.abs(p.x - 160) <= 0 && Math.abs(p.y - 34) <= 0);
         graphComplete = hasA && hasB;
     }
 
@@ -692,7 +716,7 @@ async function confirmSubmission() {
     const sName = document.getElementById('nama-siswa').value || 'Tanpa Nama';
     let dataToSave = [];
 
-    const isEq = (v) => { if(!v) return false; const c = v.toLowerCase().replace(/\s/g,'').replace(/,/g, '.'); return c === '-0.07x+44.6' || c === 'y=-0.07x+44.6' || c === '-0.07x+44.6' || c === 'y=-0.07x+44.6'; };
+    const isEq = (v) => { if(!v) return false; const c = v.toLowerCase().replace(/\s/g,'').replace(/,/g, '.'); return c === '-0.0625x+44' || c === 'y=-0.0625x+44' || c === '-0.0625x+44' || c === 'y=-0.0625x+44'; };
     const pushData = (q, ans, corr) => dataToSave.push({ student_name: sName, question: q, answer: ans, is_correct: corr });
 
     // === VALIDASI SOAL UTAMA ===
@@ -702,10 +726,10 @@ async function confirmSubmission() {
 
     // Soal tambahan
     let v5 = parseFloat(document.getElementById('jawab5').value.replace(',','.'));
-    pushData('Sisa Bensin 300km', document.getElementById('jawab5').value, Math.abs(v5 - 23.6) <= 0);
+    pushData('Sisa Bensin 300km', document.getElementById('jawab5').value, Math.abs(v5 - 25.25) <= 0);
 
     let v6 = parseFloat(document.getElementById('jawab6').value.replace(',','.'));
-    pushData('Jarak Bensin Habis', document.getElementById('jawab6').value, Math.abs(v6 - 637.1) <= 0);
+    pushData('Jarak Bensin Habis', document.getElementById('jawab6').value, Math.abs(v6 - 704) <= 0);
 
     // === VALIDASI BARU: 8 PERTANYAAN TAMBAHAN ===
     
@@ -716,16 +740,16 @@ async function confirmSubmission() {
     const coordBy = parseFloat(document.getElementById('coordBy').value);
     
     pushData('Koordinat A', `(${coordAx}, ${coordAy})`, coordAx === 80 && coordAy === 39);
-    pushData('Koordinat B', `(${coordBx}, ${coordBy})`, coordBx === 150 && coordBy === 34.1);
+    pushData('Koordinat B', `(${coordBx}, ${coordBy})`, coordBx === 160 && coordBy === 34);
     
     // 3. Gradien (Metode 2)
     let gVal = parseFloat(document.getElementById('jawab_gradien').value.replace(',','.'));
-    pushData('Gradien', document.getElementById('jawab_gradien').value, Math.abs(gVal - (-0.07)) < 0.001);
+    pushData('Gradien', document.getElementById('jawab_gradien').value, Math.abs(gVal - (-0.0625)) < 0.001);
     
     // 4. Visualisasi Grafik Kartesius
     const points = window.simpanTitik || [];
     const hasA = points.some(p => Math.abs(p.x - 80) <= 0 && Math.abs(p.y - 39) <= 0);
-    const hasB = points.some(p => Math.abs(p.x - 150) <= 0 && Math.abs(p.y - 34.1) <= 0);
+    const hasB = points.some(p => Math.abs(p.x - 160) <= 0 && Math.abs(p.y - 34) <= 0);
     pushData('Visualisasi Grafik Kartesius', JSON.stringify(window.simpanTitik), hasA && hasB);
     
     // 5. Refleksi (Ya atau Tidak)
@@ -749,6 +773,12 @@ async function confirmSubmission() {
     const kapanMetode = document.getElementById('devAnswer2').value;
     pushData('Pendapat Kelompok', kapanMetode, kapanMetode.length > 15);
 
+    // === FASE 2 (tidak divalidasi benar/salah) ===
+    const pilihanStrategi = document.querySelector('input[name="pilih-strategi"]:checked');
+    pushData('Pilihan Strategi', pilihanStrategi ? pilihanStrategi.value : '', false);
+    pushData('Alasan Strategi', document.getElementById('diskusi-alasan-strategi').value, false);
+    pushData('Identifikasi Variabel', document.getElementById('diskusi-variabel').value, false);
+
     // === DATA INFO (TIDAK DIVALIDASI) ===
     pushData('Kesimpulan Konsep', document.getElementById('kesimpulan1').value, document.getElementById('kesimpulan1').value.trim().length >= 20);
     pushData('Kesimpulan Kontekstual', document.getElementById('kesimpulan2').value, document.getElementById('kesimpulan2').value.trim().length >= 20);
@@ -761,6 +791,12 @@ async function confirmSubmission() {
     }
 
     if (supabaseClient) {
+            // Hapus data lama dulu agar tidak dobel saat submit ulang
+            await supabaseClient
+                .from('student_answers')
+                .delete()
+                .eq('student_name', sName);
+
         const { error: insertError } = await supabaseClient.from('student_answers').insert(dataToSave);
         if (insertError) {
             alert('Gagal menyimpan jawaban ke database: ' + insertError.message + '\nSilakan hubungi guru.');
@@ -770,7 +806,7 @@ async function confirmSubmission() {
     }
     
     // 1. SIMPAN DATA JAWABAN KE MEMORI SEMENTARA (UNTUK DILIHAT DI CLOSING)
-    localStorage.removeItem('dataReviewSiswa');
+    localStorage.removeItem('dataReviewSiswa_Kel1');
     localStorage.setItem('dataReviewSiswa_Kel1', JSON.stringify(dataToSave));
     
     // 2. Simpan nama siswa ke localStorage untuk review mode
@@ -796,6 +832,9 @@ function isiFormulirOtomatis(data) {
     if (dataSiswa) document.getElementById('nama-siswa').value = dataSiswa.student_name;
     
     const mapSoal = {
+        'Pilihan Strategi': null, // ditangani khusus (radio button)
+        'Alasan Strategi': 'diskusi-alasan-strategi',
+        'Identifikasi Variabel': 'diskusi-variabel',
         'Visualisasi Grafik Kartesius' : 'Grafik Chart',
         'Metode Bu Rina': 'jawab_metode1', 
         'Gradien': 'jawab_gradien', 
@@ -814,6 +853,13 @@ function isiFormulirOtomatis(data) {
     };
 
     data.forEach(item => {
+        // Restore radio button pilihan strategi
+        if (item.question === 'Pilihan Strategi') {
+            const radioEl = document.querySelector(`input[name="pilih-strategi"][value="${item.answer}"]`);
+            if (radioEl) radioEl.checked = true;
+            return;
+        }
+
         // Restore Grafik
         if (item.question === 'Visualisasi Grafik Kartesius') {
             try { 
