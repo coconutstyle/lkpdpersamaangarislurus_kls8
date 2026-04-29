@@ -390,7 +390,7 @@ async function checkAnswer(type) {
 
         if (VALID_ANSWERS.some(kunci => { const k = kunci.replace("y=",""); return ans === k || ans === "y="+k; })) {
             isCorrect = true;
-            message = '<i class="fa-solid fa-check-circle"></i> <strong>Sempurna!</strong> Pak Budi menemukan konsumsi bensin 0.0625 liter/km dan volume bensin sebelum jalan adalah 44 liter.';
+            message = '<i class="fa-solid fa-check-circle"></i> <strong>Sempurna!</strong> Pak Budi menemukan rata-rata konsumsi bensin 0.0625 liter/km dan volume bensin sebelum jalan adalah 44 liter.';
         } else {
             message = '<i class="fa-solid fa-circle-xmark"></i> Gradien benar, tapi persamaan akhirnya salah hitung.';
         }
