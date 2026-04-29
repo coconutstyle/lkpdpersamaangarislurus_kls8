@@ -1001,9 +1001,9 @@ async function confirmSubmission() {
 
     // === FASE 2 (tidak divalidasi benar/salah) ===
     const pilihanStrategi = document.querySelector('input[name="pilih-strategi"]:checked');
-    pushData('Pilihan Strategi', pilihanStrategi ? pilihanStrategi.value : '', false);
-    pushData('Alasan Strategi', document.getElementById('diskusi-alasan-strategi').value, false);
-    pushData('Identifikasi Variabel', document.getElementById('diskusi-variabel').value, false);
+    pushData('Pilihan Strategi', pilihanStrategi ? pilihanStrategi.value : '', !!(pilihanStrategi && pilihanStrategi.value.trim().length > 0));
+    pushData('Alasan Strategi', document.getElementById('diskusi-alasan-strategi').value, document.getElementById('diskusi-alasan-strategi').value.trim().length > 0);
+    pushData('Identifikasi Variabel', document.getElementById('diskusi-variabel').value, document.getElementById('diskusi-variabel').value.trim().length > 0);
 
     // === DATA INFO (TIDAK DIVALIDASI) ===
     const kel = document.getElementById('kelompok-siswa');
@@ -1124,7 +1124,7 @@ function tampilkanStatusJawaban(data) {
     const isGuruMode = urlParams.get('siswa');
     if (!isReviewMode && !isGuruMode) return;
 
-    const soalDiabaikan = ['Info Kelompok', 'nama-siswa', 'Link Presentasi', 'Pilihan Strategi', 'Alasan Strategi', 'Identifikasi Variabel', 'Alasan Kesimpulan', 'KOMENTAR_KEL_1', 'KOMENTAR_KEL_2', 'KOMENTAR_KEL_3', 'KOMENTAR_KEL_4', 'KOMENTAR_KEL_5'];
+    const soalDiabaikan = ['Info Kelompok', 'nama-siswa', 'Link Presentasi', 'Alasan Kesimpulan', 'KOMENTAR_KEL_1', 'KOMENTAR_KEL_2', 'KOMENTAR_KEL_3', 'KOMENTAR_KEL_4', 'KOMENTAR_KEL_5'];
     const soalData = data.filter(item =>
         !soalDiabaikan.includes(item.question) &&
         item.is_correct !== null &&
