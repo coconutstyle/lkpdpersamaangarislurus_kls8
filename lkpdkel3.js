@@ -1246,7 +1246,7 @@ function tampilkanStatusJawaban(data) {
     const isGuruMode = urlParams.get('siswa');
     if (!isReviewMode && !isGuruMode) return;
 
-    const soalDiabaikan = ['Info Kelompok', 'nama-siswa', 'Link Presentasi', 'Alasan Kesimpulan', 'Alasan Tidak Tagihan', 'KOMENTAR_KEL_1', 'KOMENTAR_KEL_2', 'KOMENTAR_KEL_3', 'KOMENTAR_KEL_4', 'KOMENTAR_KEL_5'];
+    const soalDiabaikan = ['Info Kelompok', 'nama-siswa', 'Link Presentasi', 'Pilihan Strategi', 'Alasan Strategi', 'Identifikasi Variabel', 'Alasan Kesimpulan', 'Alasan Tidak Tagihan', 'KOMENTAR_KEL_1', 'KOMENTAR_KEL_2', 'KOMENTAR_KEL_3', 'KOMENTAR_KEL_4', 'KOMENTAR_KEL_5'];
     const soalData = data.filter(item =>
         !soalDiabaikan.includes(item.question) &&
         item.is_correct !== null &&
